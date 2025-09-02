@@ -5,22 +5,26 @@ This project aims to create a scalable, cross-platform, high-performance game to
 ---
 
 ## Current Features
+- Fullscreen feature
 - Input Manager for keyboard and gamepad
+- Level loading from TMX map files
+- Foundation for customizable controls
 - SpriteGroup for entity management, handling collective drawing and updates
-- Base Sprite and MovingSprite classes
-- Player class with designated stats and death functions
-- Base Camera class for future side-scrolling support
+- Collision detection between Sprites and Player
+- Base Sprite, MovingSprite, and Animation classes
+- Player class with designated stats and death functions, and movement implementation
+- Side-Scrolling Camera utilizing Culling, Spatial-Grid Partitioning, Target (Player-Center), and a "Lock" feature
 - Global constants and configuration via `Globals`
 - Asset caching system for faster access (uses Texture2D)
 - Timer utility class for event handling
 
 ---
 
-## Planned Features
-- Side-scrolling Camera implementation, following any given target (default Player)
-- Collision detection within SpriteGroup and Player
-- Level loading from TMX map files
-- Player movement implementation
+## Planned Features (By next Update ideally):
 - Basic Menus and UI elements
 - Enemy AI and Classes implementation
-- Base AnimatedSprite class
+- Overworld
+- Finish Spring and Teleport functionality
+- Player powers: Invincibility, Sprinting, Honey, Auto-Move
+- More window-sizing options
+- FPS options, Cap at 144
