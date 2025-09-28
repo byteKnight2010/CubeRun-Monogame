@@ -27,7 +27,7 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 - Teleport functionality
 - Removed TextureCache for rotations
 - Debug helper
-- Tight optimizations to the camera (ex. bit-shift instead of / 2)
+- Tight optimizations to the camera (ex., bit-shift instead of / 2)
 
 ---
 
@@ -36,3 +36,6 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 - Overworld
 - Finish Spring
 - Player powers: Invincibility, Sprinting, Honey, Auto-Move
+- Multiple possible points in a level, adding a bit of randomness
+- Checkpoints
+- Upgrade the TMX loader for less reliance on LINQ and improve efficiency
