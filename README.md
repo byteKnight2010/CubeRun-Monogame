@@ -1,6 +1,7 @@
 # CubeRun-Monogame
 **Cube Run** is a 2D platformer built in **C# with Monogame**, ported from an original **Python with Pygame** version. 
-This project aims to create a scalable, cross-platform, high-performance game to efficiently handle large maps, numerous tiles, and complex collision systems without bottlenecks.
+This project aims to create a scalable, cross-platform, high-performance game to efficiently handle large maps, numerous tiles, and complex collision systems without bottlenecks. 
+I also hope to learn to use C#, Monogame, and the .NET framework through this project, all of which I have never used before. 
 
 ---
 
@@ -15,16 +16,23 @@ This project aims to create a scalable, cross-platform, high-performance game to
 - Player class with designated stats and death functions, and movement implementation
 - Side-Scrolling Camera utilizing Culling, Spatial-Grid Partitioning, Target (Player-Center), and a "Lock" feature
 - Global constants and configuration via `Globals`
-- Asset caching system for faster access (uses Texture2D)
 - Timer utility class for event handling
 
 ---
 
+## Recently Added Features
+- Basic UI with sliders
+- Window-sizing options
+- Brightness & Sound adjustment options
+- Teleport functionality
+- Removed TextureCache for rotations
+- Debug helper
+- Tight optimizations to the camera (ex. bit-shift instead of / 2)
+
+---
+
 ## Planned Features (By next Update ideally):
-- Basic Menus and UI elements
 - Enemy AI and Classes implementation
 - Overworld
-- Finish Spring and Teleport functionality
+- Finish Spring
 - Player powers: Invincibility, Sprinting, Honey, Auto-Move
-- More window-sizing options
-- FPS options, Cap at 144
