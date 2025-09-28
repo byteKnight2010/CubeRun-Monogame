@@ -1,21 +1,30 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using static Cube_Run_C_.Tools;
 using static Cube_Run_C_.Globals;
+using static Cube_Run_C_.Tools.BitMask;
 using RectangleF = System.Drawing.RectangleF;
 
 
 namespace Cube_Run_C_ {
   static class Camera {
+    [Flags]
+    enum DirtyUpdates : byte {
+      Sort = 1 << 0,
+      ScreenRect = 1 << 1,
+    }
+
+
     private static List<Sprite> SpriteList = new();
     private static List<Sprite> NewSprites = new();
+    private static List<Sprite> QuerySprites = new();
     private static SpatialGrid SpatialGrid = new();
     private static Vector2 Offset = Vector2.Zero;
     private static Vector2 LastTargetPosition = Vector2.Zero;
-    private static Vector2 DrawScale = Vector2.One;
-    private static Dimensions ScreenDimensions;
+    public static Vector2 DrawScale = Vector2.One;
+    public static Dimensions ScreenDimensions;
     private static DimensionsF LevelDimensions;
     public static Dimensions HalfScreen = new();
     private static RectangleF CachedScreenRect;
@@ -23,37 +32,37 @@ namespace Cube_Run_C_ {
     public static Color BackgroundColor;
     public static float Scale = 1.0f;
     private static float InverseScale = 1.0f;
-    private static bool SortDirty = false;
-    private static bool ScreenRectDirty = true;
+    private static byte RequiredUpdates = 0b00000000;
 
 
     public static void Reset(Color backgroundColor) {
-      Camera.SpriteList.Clear();
-      Camera.NewSprites.Clear();
-      Camera.SpatialGrid.Clear();
-      Camera.Offset = Vector2.Zero;
-      Camera.LastTargetPosition = Vector2.Zero;
-      Camera.BackgroundColor = backgroundColor;
-      Camera.SortDirty = false;
-      Camera.UpdateScale();
+      SpriteList.Clear();
+      NewSprites.Clear();
+      QuerySprites.Clear();
+      SpatialGrid.Clear();
+      Offset = Vector2.Zero;
+      LastTargetPosition = Vector2.Zero;
+      BackgroundColor = backgroundColor;
+      SetAll(ref RequiredUpdates, false);
+      UpdateScale();
     }
 
 
     public static void Add(Sprite sprite) {
-      if (Camera.SpriteList.Count == 0 || sprite.Z >= Camera.SpriteList[^1].Z) {
-        Camera.SpriteList.Add(sprite);
-        Camera.SpatialGrid.Insert(sprite);
+      if (SpriteList.Count == 0 || sprite.Z >= SpriteList[^1].Z) {
+        SpriteList.Add(sprite);
+        SpatialGrid.Insert(sprite);
       } else {
-        Camera.NewSprites.Add(sprite);
-        Camera.SortDirty = true;
+        NewSprites.Add(sprite);
+        Set(ref RequiredUpdates, (byte)DirtyUpdates.Sort, true);
       }
     }
 
     public static bool Remove(Sprite sprite) {
-      bool Removed = Camera.SpriteList.Remove(sprite);
+      bool Removed = SpriteList.Remove(sprite);
 
       if (Removed) {
-        Camera.SpatialGrid.Remove(sprite);
+        SpatialGrid.Remove(sprite);
       } else {
         Removed = NewSprites.Remove(sprite);
       }
@@ -62,31 +71,32 @@ namespace Cube_Run_C_ {
     }
 
     public static void Clear() {
-      Camera.SpriteList.Clear();
-      Camera.NewSprites.Clear();
-      Camera.SpatialGrid.Clear();
-      Camera.SortDirty = false;
+      SpriteList.Clear();
+      NewSprites.Clear();
+      QuerySprites.Clear();
+      SpatialGrid.Clear();
+      Set(ref RequiredUpdates, (byte)DirtyUpdates.Sort, false);
     }
 
 
     public static void LockPosition(Vector2 position) {
-      if (Camera.Offset != position)
-        Camera.Offset = position;
+      if (Offset != position)
+        Offset = position;
     }
 
     public static void UpdateScale() {
-      Dimensions ScreenDimensions = new(Camera.Graphics.GraphicsDevice.Viewport.Width, Camera.Graphics.GraphicsDevice.Viewport.Height);
-      float Scale = Math.Min(ScreenDimensions.Width / DEFAULT_DIMENSIONS.Width, ScreenDimensions.Height / DEFAULT_DIMENSIONS.Height);
+      Dimensions ScreenDimensions = new(Graphics.GraphicsDevice.Viewport.Width, Graphics.GraphicsDevice.Viewport.Height);
+      float Scale = Math.Min((float)ScreenDimensions.Width / (float)DEFAULT_DIMENSIONS.Width, (float)ScreenDimensions.Height / (float)DEFAULT_DIMENSIONS.Height);
 
       Camera.ScreenDimensions = ScreenDimensions;
-      Camera.HalfScreen = new((int)(ScreenDimensions.Width * 0.5f), (int)(ScreenDimensions.Height * 0.5f));
-      Camera.LevelDimensions = new(LevelData.Dimensions.Item2.Width * Scale, LevelData.Dimensions.Item2.Height * Scale);
-      Camera.LastTargetPosition = new(0, 0);
-      Camera.DrawScale.X = Scale;
-      Camera.DrawScale.Y = Scale;
+      HalfScreen = new(ScreenDimensions.Width >> 1, ScreenDimensions.Height >> 1);
+      LevelDimensions = new(LevelData.Dimensions.Item2.Width * Scale, LevelData.Dimensions.Item2.Height * Scale);
+      LastTargetPosition = Vector2.Zero;
+      DrawScale.X = Scale;
+      DrawScale.Y = Scale;
       Camera.Scale = Scale;
-      Camera.InverseScale = 1 / Scale;
-      Camera.ScreenRectDirty = true;
+      InverseScale = 1 / Scale;
+      Set(ref RequiredUpdates, (byte)DirtyUpdates.ScreenRect, true);
     }
 
 
@@ -109,48 +119,67 @@ namespace Cube_Run_C_ {
 
 
     public static void Draw(SpriteBatch spriteBatch, Vector2 targetPosition) {
-      if (Camera.SpriteList.Count == 0) return;
+      if (SpriteList.Count == 0) return;
 
-      List<Sprite> Sprites = Camera.SpriteList;
-      int ScreenWidth = Camera.ScreenDimensions.Width;
-      int ScreenHeight = Camera.ScreenDimensions.Height;
-
-      if (Camera.LevelDimensions.Width != LevelData.Dimensions.Item2.Width) {
-        Camera.LevelDimensions = new(LevelData.Dimensions.Item2.Width * Camera.Scale, LevelData.Dimensions.Item2.Height * Camera.Scale);
-        Camera.ScreenRectDirty = true;
+      int ScreenWidth = ScreenDimensions.Width;
+      int ScreenHeight = ScreenDimensions.Height;
+      
+      if (LevelDimensions.Width != LevelData.Dimensions.Item2.Width) {
+        LevelDimensions = new(LevelData.Dimensions.Item2.Width * Scale, LevelData.Dimensions.Item2.Height * Scale);
+        Set(ref RequiredUpdates, (byte)DirtyUpdates.ScreenRect, true);
       }
 
-      if (Camera.LastTargetPosition != targetPosition) {
-        Camera.Offset.X = Math.Max(0, Math.Min(Camera.LevelDimensions.Width - ScreenWidth, (targetPosition.X * Camera.Scale) - Camera.HalfScreen.Width));
-        Camera.Offset.Y = Math.Max(0, Math.Min(Camera.LevelDimensions.Height - ScreenHeight, (targetPosition.Y * Camera.Scale) - Camera.HalfScreen.Height));
-        Camera.LastTargetPosition = targetPosition;
-        Camera.ScreenRectDirty = true;
+      if (LastTargetPosition != targetPosition) {
+        Offset.X = Math.Max(0, Math.Min(LevelDimensions.Width - ScreenWidth, (targetPosition.X * Scale) - HalfScreen.Width));
+        Offset.Y = Math.Max(0, Math.Min(LevelDimensions.Height - ScreenHeight, (targetPosition.Y * Scale) - HalfScreen.Height));
+        LastTargetPosition = targetPosition;
+        Set(ref RequiredUpdates, (byte)DirtyUpdates.ScreenRect, true);
       }
 
-      if (Camera.ScreenRectDirty) {
-        Camera.CachedScreenRect = new(Offset.X * Camera.InverseScale, Offset.Y * Camera.InverseScale, ScreenWidth * Camera.InverseScale, ScreenHeight * Camera.InverseScale);
-        Camera.ScreenRectDirty = false;
+      if (IsSet(RequiredUpdates, (byte)DirtyUpdates.ScreenRect)) {
+        CachedScreenRect = new(Offset.X * InverseScale, Offset.Y * InverseScale, ScreenWidth * InverseScale, ScreenHeight * InverseScale);
+        Set(ref RequiredUpdates, (byte)DirtyUpdates.ScreenRect, false);
       }
 
-      if (Camera.SortDirty) {
-        if (Camera.NewSprites.Count > 0) {
-          if (Camera.NewSprites.Count < 10 && Camera.NewSprites.Count > 50) {
-            foreach (Sprite NewSprite in Camera.NewSprites) {
-              SpriteList.Insert(Camera.BinarySearchInsertionPoint(Camera.SpriteList, NewSprite.Z), NewSprite);
+      if (IsSet(RequiredUpdates, (byte)DirtyUpdates.Sort)) {
+        if (NewSprites.Count > 0) {
+          if (NewSprites.Count >= 10 && NewSprites.Count <= 50) {
+            for (int Index = 0; Index < NewSprites.Count; Index++) {
+              SpriteList.Insert(BinarySearchInsertionPoint(SpriteList, NewSprites[Index].Z), NewSprites[Index]);
             }
           } else {
-            Camera.SpriteList.AddRange(Camera.NewSprites);
-            Camera.SpriteList.Sort((a, b) => a.Z.CompareTo(b.Z));
+            SpriteList.AddRange(NewSprites);
+            SpriteList.Sort((spriteA, spriteB) => {
+              int ZCompare = spriteA.Z.CompareTo(spriteB.Z);
+
+              if (ZCompare != 0)
+                return ZCompare;
+
+              return spriteA.Image.GetHashCode().CompareTo(spriteB.Image.GetHashCode());
+            });
           }
         }
 
-        Camera.SortDirty = false;
+        Set(ref RequiredUpdates, (byte)DirtyUpdates.Sort, false);
       }
 
-      foreach (Sprite Sprite in Camera.SpatialGrid.Query(Camera.CachedScreenRect)) {
-        if (!Sprite.Rect.IntersectsWith(Camera.CachedScreenRect)) continue;
+      QuerySprites = SpatialGrid.Query(CachedScreenRect);
+      for (int Index = 0; Index < QuerySprites.Count; Index++) {
+        Sprite Sprite = QuerySprites[Index];
+        RectangleF SpriteRect = Sprite.Rect;
 
-        spriteBatch.Draw(Sprite.GetImage(), Sprite.Rect.TopLeft() * Camera.Scale - Offset, Sprite.GetFrame(), Color.White, 0f, new Vector2(0, 0), Camera.DrawScale, SpriteEffects.None, 0f);
+        if (!SpriteRect.IntersectsWith(CachedScreenRect)) continue;
+
+        Texture2D SpriteTexture = Sprite.GetImage();
+        SpriteTransform SpriteTransformations = Sprite.Transformations;
+        Rectangle? SpriteFrame = Sprite.GetFrame();
+        Vector2 SpritePosition = SpriteRect.TopLeft() * Scale - Offset;
+
+        if (SpriteTransformations.Rotation == 0f && SpriteTransformations.Effect == SpriteEffects.None) {
+          spriteBatch.Draw(SpriteTexture, SpritePosition, SpriteFrame, Color.White, 0f, Vector2.Zero, DrawScale, SpriteEffects.None, 0f);
+        } else {
+          spriteBatch.Draw(SpriteTexture, SpritePosition, SpriteFrame, Color.White, SpriteTransformations.Rotation, new(SpriteTexture.Width >> 1, SpriteTexture.Height >> 1), DrawScale, SpriteTransformations.Effect, 0f);
+        }
       }
     }
   }
