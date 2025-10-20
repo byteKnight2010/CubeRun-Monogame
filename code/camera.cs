@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Cube_Run_C_.Tools;
@@ -17,7 +18,7 @@ namespace Cube_Run_C_ {
     }
 
 
-    private static List<Sprite> SpriteList = new();
+    public static List<Sprite> SpriteList = new();
     private static List<Sprite> NewSprites = new();
     private static List<Sprite> QuerySprites = new();
     private static SpatialGrid SpatialGrid = new();
@@ -54,6 +55,7 @@ namespace Cube_Run_C_ {
         SpatialGrid.Insert(sprite);
       } else {
         NewSprites.Add(sprite);
+        SpatialGrid.Insert(sprite);
         Set(ref RequiredUpdates, (byte)DirtyUpdates.Sort, true);
       }
     }
@@ -84,6 +86,7 @@ namespace Cube_Run_C_ {
         Offset = position;
     }
 
+
     public static void UpdateScale() {
       Dimensions ScreenDimensions = new(Graphics.GraphicsDevice.Viewport.Width, Graphics.GraphicsDevice.Viewport.Height);
       float Scale = Math.Min((float)ScreenDimensions.Width / (float)DEFAULT_DIMENSIONS.Width, (float)ScreenDimensions.Height / (float)DEFAULT_DIMENSIONS.Height);
@@ -99,6 +102,14 @@ namespace Cube_Run_C_ {
       Set(ref RequiredUpdates, (byte)DirtyUpdates.ScreenRect, true);
     }
 
+    public static void UpdateSpritePosition(Sprite sprite) {
+      SpatialGrid.Remove(sprite);
+      SpatialGrid.Insert(sprite);
+    }
+
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Vector2 WorldToScreen(Vector2 worldPosition) => (worldPosition * Scale) - Offset;
 
     private static int BinarySearchInsertionPoint(List<Sprite> spriteList, byte Z) {
       int Left = 0;
@@ -119,7 +130,8 @@ namespace Cube_Run_C_ {
 
 
     public static void Draw(SpriteBatch spriteBatch, Vector2 targetPosition) {
-      if (SpriteList.Count == 0) return;
+      if (SpriteList.Count == 0) 
+        return;
 
       int ScreenWidth = ScreenDimensions.Width;
       int ScreenHeight = ScreenDimensions.Height;
@@ -158,17 +170,43 @@ namespace Cube_Run_C_ {
               return spriteA.Image.GetHashCode().CompareTo(spriteB.Image.GetHashCode());
             });
           }
+
+          NewSprites.Clear();
         }
 
         Set(ref RequiredUpdates, (byte)DirtyUpdates.Sort, false);
       }
 
       QuerySprites = SpatialGrid.Query(CachedScreenRect);
+
+      if (QuerySprites.Count > 1) {
+        Sprite[] SortedSprites = new Sprite[QuerySprites.Count];
+        int[] Counts = new int[8];
+
+        for (int Index = 0; Index < QuerySprites.Count; Index++) {
+          Counts[QuerySprites[Index].Z]++;
+        }
+
+        for (int Index = 1; Index < 8; Index++) {
+          Counts[Index] += Counts[Index - 1];
+        }
+        
+        for (int Index = QuerySprites.Count - 1; Index >= 0; Index--) {
+          Sprite Sprite = QuerySprites[Index];
+          SortedSprites[--Counts[Sprite.Z]] = Sprite;
+        }
+
+        for (int Index = 0; Index < QuerySprites.Count; Index++) {
+          QuerySprites[Index] = SortedSprites[Index];
+        }
+      }
+
       for (int Index = 0; Index < QuerySprites.Count; Index++) {
         Sprite Sprite = QuerySprites[Index];
         RectangleF SpriteRect = Sprite.Rect;
 
-        if (!SpriteRect.IntersectsWith(CachedScreenRect)) continue;
+        if (!SpriteRect.IntersectsWith(CachedScreenRect)) 
+          continue;
 
         Texture2D SpriteTexture = Sprite.GetImage();
         SpriteTransform SpriteTransformations = Sprite.Transformations;
@@ -178,7 +216,8 @@ namespace Cube_Run_C_ {
         if (SpriteTransformations.Rotation == 0f && SpriteTransformations.Effect == SpriteEffects.None) {
           spriteBatch.Draw(SpriteTexture, SpritePosition, SpriteFrame, Color.White, 0f, Vector2.Zero, DrawScale, SpriteEffects.None, 0f);
         } else {
-          spriteBatch.Draw(SpriteTexture, SpritePosition, SpriteFrame, Color.White, SpriteTransformations.Rotation, new(SpriteTexture.Width >> 1, SpriteTexture.Height >> 1), DrawScale, SpriteTransformations.Effect, 0f);
+          Vector2 RotationOffset = Sprite.RotationOffset;
+          spriteBatch.Draw(SpriteTexture, SpritePosition + (RotationOffset * Scale), SpriteFrame, Color.White, SpriteTransformations.Rotation, RotationOffset, DrawScale, SpriteTransformations.Effect, 0f);
         }
       }
     }
