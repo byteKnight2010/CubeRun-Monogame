@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,7 +12,20 @@ using static Cube_Run_C_.Globals.PlayerData;
 using RectangleF = System.Drawing.RectangleF;
 
 
+
 namespace Cube_Run_C_ {
+  public struct BasicSprite {
+    public Texture2D Image;
+    public Vector2 Position;
+
+
+    public BasicSprite(Texture2D image, Vector2 position) {
+      this.Image = image;
+      this.Position = position;
+    }
+  }
+
+
   public class Animation {
     public Texture2D SpriteSheet;
     public Vector2 Size;
@@ -66,20 +80,19 @@ namespace Cube_Run_C_ {
   }
 
   public class SpriteGroup<T> where T : Sprite {
-    public List<T> SpriteList = new List<T>();
-    private SpatialGrid Grid = new SpatialGrid();
-    private bool SpritesMoved = false;
-    private bool UseQuery = false;
-    private bool GridDirty = false;
+    public List<T> SpriteList = new();
+    private readonly SpatialGrid Grid = new();
+    private byte Properties = 0b00000000;
 
 
     public virtual void Add(T sprite) {
       this.SpriteList.Add(sprite);
+      this.Grid.Insert(sprite);
 
       if (this.SpriteList.Count > 100) {
-        this.UseQuery = true;
+        Set(ref this.Properties, (byte)SpriteGroupProperties.UseQuery, true);
       } else {
-        this.GridDirty = true;
+        Set(ref this.Properties, (byte)SpriteGroupProperties.GridDirty, true);
       }
     }
 
@@ -88,23 +101,29 @@ namespace Cube_Run_C_ {
 
       if (Removed) {
         if (this.SpriteList.Count <= 100) {
-          this.UseQuery = false;
+          Set(ref this.Properties, (byte)SpriteGroupProperties.UseQuery, false);
         } else {
-          this.GridDirty = true;
+          Set(ref this.Properties, (byte)SpriteGroupProperties.GridDirty, true);
         }
       }
     }
 
+    public bool Contains(T sprite) => this.SpriteList.Contains(sprite);
+
     public virtual void Clear() {
       this.SpriteList.Clear();
       this.Grid.Clear();
-      this.GridDirty = false;
-      this.UseQuery = false;
+
+      Set(ref this.Properties, (byte)SpriteGroupProperties.GridDirty, false);
+      Set(ref this.Properties, (byte)SpriteGroupProperties.UseQuery, false);
     }
 
 
     public CollisionResult OverlapsWith(Sprite checkSprite) {
-      if (this.UseQuery) {
+      if (this.SpriteList.Count == 0)
+        return new(false, null, null);
+
+      if (IsSet(this.Properties, (byte)SpriteGroupProperties.UseQuery)) {
         this.UpdateGrid();
 
         List<Sprite> Query = this.Grid.Query(checkSprite.Rect);
@@ -124,31 +143,34 @@ namespace Cube_Run_C_ {
       return new(false, null, null);
     }
 
-    public (Sprite, bool) OverlapsWith(RectangleF checkSpriteRect) {
-      if (this.UseQuery) {
+    public Sprite OverlapsWith(RectangleF checkSpriteRect) {
+      if (this.SpriteList.Count == 0)
+        return (null);
+
+      if (IsSet(this.Properties, (byte)SpriteGroupProperties.UseQuery)) {
         this.UpdateGrid();
 
         List<Sprite> Query = this.Grid.Query(checkSpriteRect);
 
         for (int Index = 0; Index < Query.Count; Index++) {
           if (Query[Index].Rect.IntersectsWith(checkSpriteRect))
-            return (Query[Index], true);
+            return Query[Index];
         }
       } else {
         for (int Index = 0; Index < this.SpriteList.Count; Index++) {
           if (this.SpriteList[Index].Rect.IntersectsWith(checkSpriteRect))
-            return (this.SpriteList[Index], true);
+            return this.SpriteList[Index];
         }
       }
 
-      return (null, false);
+      return (null);
     }
 
     public CollisionResult OverlapsWith(SpriteGroup<Sprite> group) {
       if (group.SpriteList.Count == 0)
         return new(false, null, null);
 
-      if (this.UseQuery) {
+      if (IsSet(this.Properties, (byte)SpriteGroupProperties.UseQuery)) {
         this.UpdateGrid();
 
         for (int Index = 0; Index < group.SpriteList.Count; Index++) {
@@ -173,10 +195,10 @@ namespace Cube_Run_C_ {
 
 
     public void UpdateGrid() {
-      if (!this.GridDirty || this.SpriteList.Count == 0) return;
+      if (!IsSet(this.Properties, (byte)SpriteGroupProperties.GridDirty) || this.SpriteList.Count == 0) return;
 
       this.Grid.Clear();
-      this.GridDirty = false;
+      Set(ref this.Properties, (byte)SpriteGroupProperties.GridDirty, false);
 
       for (int Index = 0; Index < this.SpriteList.Count; Index++) {
         this.Grid.Insert(this.SpriteList[Index]);
@@ -188,11 +210,11 @@ namespace Cube_Run_C_ {
         Sprite Sprite = this.SpriteList[Index];
         Sprite.Update(deltaTime);
 
-        SpritesMoved = this.UseQuery && !SpritesMoved && (Sprite.OldRect.X != Sprite.Rect.X || Sprite.OldRect.Y != Sprite.Rect.Y);
+        Set(ref this.Properties, (byte)SpriteGroupProperties.SpritesMoved, IsSet(this.Properties, (byte)SpriteGroupProperties.UseQuery) && !IsSet(this.Properties, (byte)SpriteGroupProperties.SpritesMoved) && (Sprite.OldRect.X != Sprite.Rect.X || Sprite.OldRect.Y != Sprite.Rect.Y));
       }
 
-      if (SpritesMoved)
-        this.GridDirty = true;
+      if (IsSet(this.Properties, (byte)SpriteGroupProperties.SpritesMoved))
+        Set(ref this.Properties, (byte)SpriteGroupProperties.GridDirty, true);
     }
   }
 
@@ -269,13 +291,14 @@ namespace Cube_Run_C_ {
     }
   }
 
-
+  
   public class Sprite {
     public Animation Animation;
     public Texture2D Image;
     public SpriteTransform Transformations;
     public RectangleF Rect;
     public RectangleF OldRect;
+    public Vector2 RotationOffset = Vector2.Zero;
     public byte Z = 0;
 
 
@@ -286,6 +309,10 @@ namespace Cube_Run_C_ {
       this.Rect = texture.GetRectangleF(position);
       this.OldRect = this.Rect;
       this.Z = (byte)z;
+
+      if (this.Transformations.Rotation != 0f || this.Transformations.Effect != SpriteEffects.None) {
+        this.RotationOffset = new(texture.Width >> 1, texture.Height >> 1);
+      }
 
       for (int Index = 0; Index < groups.Count; Index++) {
         if (groups[Index] == Groups.All) {
@@ -304,6 +331,10 @@ namespace Cube_Run_C_ {
       this.Rect = new(position.X, position.Y, animation.Size.X, animation.Size.Y);
       this.OldRect = this.Rect;
       this.Z = (byte)z;
+
+      if (this.Transformations.Rotation != 0f || this.Transformations.Effect != SpriteEffects.None) {
+        this.RotationOffset = new(animation.Size.X * 0.5f, animation.Size.Y * 0.5f);
+      }
 
       for (int Index = 0; Index < groups.Count; Index++) {
         if (groups[Index] == Groups.All) {
@@ -325,10 +356,10 @@ namespace Cube_Run_C_ {
 
   public class MovingSprite : Sprite {
     public Vector2 Direction;
-    public Vector2 Speed;
+    public ushort Speed;
 
 
-    public MovingSprite(Texture2D texture, Vector2 position, Vector2 direction, Vector2 speed, List<Groups> groups, ZLayers z, Directions faceDirection = Directions.Left) : base(texture, position, groups, z, faceDirection) {
+    public MovingSprite(Texture2D texture, Vector2 position, Vector2 direction, ushort speed, List<Groups> groups, ZLayers z, Directions faceDirection = Directions.Left) : base(texture, position, groups, z, faceDirection) {
       this.Direction = direction;
       this.Speed = speed;
 
@@ -336,7 +367,7 @@ namespace Cube_Run_C_ {
         this.Direction.Normalize();
     }
 
-    public MovingSprite(Animation animation, Vector2 position, Vector2 direction, Vector2 speed, List<Groups> groups, ZLayers z, Directions faceDirection = Directions.Left) : base(animation, position, groups, z, faceDirection) {
+    public MovingSprite(Animation animation, Vector2 position, Vector2 direction, ushort speed, List<Groups> groups, ZLayers z, Directions faceDirection = Directions.Left) : base(animation, position, groups, z, faceDirection) {
       this.Direction = direction;
       this.Speed = speed;
 
@@ -348,14 +379,52 @@ namespace Cube_Run_C_ {
     public override void Update(float deltaTime) {
       this.OldRect = this.Rect;
 
-      this.Rect.X += this.Direction.X * this.Speed.X * deltaTime;
-      this.Rect.Y += this.Direction.Y * this.Speed.Y * deltaTime;
+      this.Rect.X += this.Direction.X * this.Speed * deltaTime;
+      this.Rect.Y += this.Direction.Y * this.Speed * deltaTime;
+
+      if (this.OldRect.X != this.Rect.X || this.OldRect.Y != this.Rect.Y)
+        Camera.UpdateSpritePosition(this);
 
       base.Update(deltaTime);
     }
   }
 
-  
+  public class RotatingSprite : Sprite {
+    private Circle Circle;
+    private float Theta = 0f;
+    public float Speed;
+    public bool Clockwise; 
+
+
+    public RotatingSprite(Texture2D texture, Circle circle, bool clockwise, float speed, List<Groups> groups, ZLayers z) : base(texture, circle.Center, groups, z) {
+      this.Circle = circle;
+      this.Speed = speed;
+      this.Clockwise = clockwise;
+    }
+
+    public RotatingSprite(Animation animation, Circle circle, bool clockwise, float speed, List<Groups> groups, ZLayers z) : base(animation, circle.Center, groups, z) {
+      this.Circle = circle;
+      this.Speed = speed;
+      this.Clockwise = clockwise;
+    }
+
+
+    public override void Update(float deltaTime) {
+      this.OldRect = this.Rect;
+      this.Theta += ToRadians(this.Speed * deltaTime) * (Clockwise ? 1 : -1);
+
+      if (this.Theta >= MathHelper.TwoPi) {
+        this.Theta = 0;
+      } else if (this.Theta < 0) {
+        this.Theta = MathHelper.TwoPi;
+      }
+
+      this.Rect.TopLeft(new(this.Circle.Center.X + this.Circle.Radius * MathF.Cos(this.Theta), this.Circle.Center.Y + this.Circle.Radius * MathF.Sin(this.Theta)));
+      base.Update(deltaTime);
+    }
+  }
+
+
   public class DottedLine {
     public static Texture2D Pixel;
     private Vector2 Direction;
@@ -401,35 +470,28 @@ namespace Cube_Run_C_ {
 
 
   public class Player : Sprite {
-    // Stats
-    private bool[] ActivatedCheckpoints = new bool[3];
+    private RectangleF[] CollisionRectangles = [RectangleF.Empty, RectangleF.Empty, RectangleF.Empty, RectangleF.Empty];
+    private MovingSprite Platform;
     private Vector2 RespawnPos;
-    public ushort Deaths = 0;
-    public char Size = 'N';
-    public char Environment = 'A';
-    public byte ActivatedPowers = 0b00000000;
-    public byte MovementChangers = 0b00000000;
-    public byte Stats = 0b00000000;
-    // Movement
-    private (sbyte, sbyte) InputVector = (0, 0);
     public Vector2 Direction = Vector2.Zero;
     public Vector2 Acceleration = Vector2.Zero;
     private Vector2 Velocity = Vector2.Zero;
+    private IVector2 InputVector = IVector2.Zero;
+    public uint Stats = 0x00000000;
+    public ushort Deaths = 0;
     public ushort Gravity = LevelData.Gravity;
     public ushort JumpHeight = 600;
     public ushort MovementSpeed = 300;
-    // Collision
-    private MovingSprite Platform;
-    private byte OnSurface = 0b00000000;
-    // Timers
+    public char Size = 'N';
+    public char Environment = 'A';
     public Timer[] Timers = [new(250), new(0), new(0), new(0), new(0), new(0), new(200), new(100), new(100), new(200), new(100), new(100)];
 
 
    public Player(Vector2 position) : base(GetTexture("Images/PlayerImages/Player"), position, new() { Groups.All }, ZLayers.Player) {
       this.RespawnPos = position;
 
-      Set(ref this.Stats, (byte)PlayerStats.HorizontalMovement, true);
-      Set(ref this.Stats, (byte)PlayerStats.CanJump, true);
+      Set(ref this.Stats, (uint)PlayerStats.HorizontalMovement, true);
+      Set(ref this.Stats, (uint)PlayerStats.CanJump, true);
 
       this.Timers[(byte)PlayerTimers.RespawnStatus].Activate();
     }
@@ -438,19 +500,20 @@ namespace Cube_Run_C_ {
     private void DeathConditions() {
       if (this.Velocity.Y >= 900 && IsSet(this.Stats, (byte)PlayerStats.FallDamageEnabled))
         Set(ref this.Stats, (byte)PlayerStats.FallDamageCondition, true);
-      if (this.Velocity.Y == 0 && !IsSet(this.OnSurface, (byte)PlayerSurfaces.Bottom))
+      if (this.Velocity.Y == 0 && !IsSet(this.Stats, (uint)PlayerStats.Bottom))
         Set(ref this.Stats, (byte)PlayerStats.FallDamageCondition, false);
 
-      if (IsSet(this.OnSurface, (byte)PlayerSurfaces.Bottom) && IsSet(this.Stats, (byte)PlayerStats.FallDamageCondition)) {
+      if (IsSet(this.Stats, (uint)PlayerStats.Bottom) && IsSet(this.Stats, (byte)PlayerStats.FallDamageCondition)) {
         Set(ref this.Stats, (byte)PlayerStats.FallDamageCondition, false);
 
-        if (!IsSet(this.ActivatedPowers, (byte)PlayerPowers.Invincibility) && !IsSet(this.ActivatedPowers, (byte)PlayerPowers.Honey))
+        if (!IsSet(this.Stats, (uint)PlayerStats.Invincibility) && !IsSet(this.Stats, (uint)PlayerStats.Honey))
           this.Death();
       }
     }
 
     public void Death() {
-      if (this.Timers[(byte)PlayerTimers.RespawnStatus].Active || this.Timers[(byte)PlayerTimers.Invincibility].Active) return;
+      if (this.Timers[(byte)PlayerTimers.RespawnStatus].Active || this.Timers[(byte)PlayerTimers.Invincibility].Active)
+        return;
 
       Set(ref this.Stats, (byte)PlayerStats.FallDamageCondition, false);
       this.Rect.X = this.RespawnPos.X;
@@ -459,76 +522,76 @@ namespace Cube_Run_C_ {
 
       this.Timers[(byte)PlayerTimers.RespawnStatus].Activate();
 
-      Lives -= 1;
+      Lives--;
     }
 
 
     private void Input() {
-      this.InputVector = (0, 0);
+      this.InputVector = IVector2.Zero;
 
-      if (!this.Timers[(byte)PlayerTimers.RespawnStatus].Active && !this.Timers[(byte)PlayerTimers.SpringMove].Active && !this.Timers[(byte)PlayerTimers.ShieldKnockback].Active) {
-        if (IsSet(this.Stats, (byte)PlayerStats.HorizontalMovement)) {
+      if (!this.Timers[(uint)PlayerTimers.RespawnStatus].Active && !this.Timers[(byte)PlayerTimers.SpringMove].Active && !this.Timers[(byte)PlayerTimers.ShieldKnockback].Active) {
+        if (IsSet(this.Stats, (uint)PlayerStats.HorizontalMovement)) {
           if (InputManager.CheckAction(GameAction.MoveRight, false))
-            this.InputVector.Item1++;
+            this.InputVector.X++;
 
           if (InputManager.CheckAction(GameAction.MoveLeft, false))
-            this.InputVector.Item1--;
+            this.InputVector.X--;
 
-          this.Direction.X = this.InputVector.Item1 * (IsSet(this.ActivatedPowers, (byte)PlayerPowers.Sprint) && InputManager.IsKeyDown(Keys.LeftShift) ? 2 : 1);
+          this.Direction.X = this.InputVector.X * (IsSet(this.Stats, (uint)PlayerStats.Sprint) && InputManager.IsKeyDown(Keys.LeftShift) ? 2 : 1);
         }
 
-        if (IsSet(this.Stats, (byte)PlayerStats.VerticalMovement)) {
+        if (IsSet(this.Stats, (uint)PlayerStats.VerticalMovement)) {
           if (InputManager.CheckAction(GameAction.MoveUp, false))
-            this.InputVector.Item2--;
+            this.InputVector.Y--;
 
           if (InputManager.CheckAction(GameAction.MoveDown, false))
-            this.InputVector.Item2++;
+            this.InputVector.Y++;
 
-          this.Direction.Y = this.InputVector.Item2;
+          this.Direction.Y = this.InputVector.Y;
         }
       }
 
-      if (IsSet(this.Stats, (byte)PlayerStats.CanJump) && InputManager.CheckAction(GameAction.Jump, true))
+      if (IsSet(this.Stats, (uint)PlayerStats.CanJump) && InputManager.CheckAction(GameAction.Jump, true))
         this.StartJump();
 
       if (InputManager.IsKeyDown(Keys.Down) || InputManager.IsKeyDown(Keys.S)) {
-        if (IsSet(this.ActivatedPowers, (byte)PlayerPowers.Honey) && IsSet(this.OnSurface, (byte)PlayerSurfaces.StickingCeiling)) {
+        if (IsSet(this.Stats, (uint)PlayerStats.Honey) && IsSet(this.Stats, (uint)PlayerStats.StickingCeiling)) {
           this.Rect.Y += 2;
-          Set(ref this.OnSurface, (byte)PlayerSurfaces.StickingCeiling, false);
+          Set(ref this.Stats, (uint)PlayerStats.StickingCeiling, false);
         }
       }
     }
 
 
-    public void MovementChange(PlayerMovers change) {
-      if (IsSet(this.MovementChangers, (byte)change))
+    public void MovementChange(PlayerStats change) {
+      if (IsSet(this.Stats, (uint)change))
         return;
 
-      Set(ref this.MovementChangers, (byte)change, true);
+      Set(ref this.Stats, (uint)change, true);
 
       switch (change) {
-        case PlayerMovers.Ladder:
-          Set(ref this.Stats, (byte)PlayerStats.HorizontalMovement, true);
-          Set(ref this.Stats, (byte)PlayerStats.VerticalMovement, true);
+        case PlayerStats.Ladder:
+          Set(ref this.Stats, (uint)PlayerStats.HorizontalMovement, true);
+          Set(ref this.Stats, (uint)PlayerStats.VerticalMovement, true);
           break;
       }
     }
 
     private void MovementReturn() {
-      if (IsSet(this.Stats, (byte)PlayerStats.ReturnedMovement) || !IsSet(this.Stats, (byte)PlayerStats.ReturnMovement) || !Any(this.MovementChangers))
+      if (IsSet(this.Stats, (uint)PlayerStats.ReturnedMovement) || !IsSet(this.Stats, (uint)PlayerStats.ReturnMovement) || !Any(this.Stats, 13, 18))
         return;
 
-      Set(ref this.Stats, (byte)PlayerStats.HorizontalMovement, true);
-      Set(ref this.Stats, (byte)PlayerStats.VerticalMovement, false);
+      Set(ref this.Stats, (uint)PlayerStats.HorizontalMovement, true);
+      Set(ref this.Stats, (uint)PlayerStats.VerticalMovement, false);
       this.Gravity = LevelData.Gravity;
       this.JumpHeight = 600;
       this.MovementSpeed = 300;
-      Set(ref this.Stats, (byte)PlayerStats.ReturnedMovement, false);
+      Set(ref this.Stats, (uint)PlayerStats.ReturnedMovement, false);
     }
 
 
     private void Move(float deltaTime) {
-      if (IsSet(this.ActivatedPowers, (byte)PlayerPowers.AutoMove)) {
+      if (IsSet(this.Stats, (uint)PlayerStats.AutoMove)) {
         this.Velocity.X += this.Acceleration.X * deltaTime;
         this.Rect.X += this.Velocity.X;
       } else {
@@ -537,24 +600,24 @@ namespace Cube_Run_C_ {
       }
 
       if (this.Platform != null) {
-        this.Rect.X += this.Platform.Direction.X * this.Platform.Speed.X * deltaTime;
-        this.Rect.Y += this.Platform.Direction.Y * this.Platform.Speed.Y * deltaTime;
+        this.Rect.X += this.Platform.Direction.X * this.Platform.Speed * deltaTime;
+        this.Rect.Y += this.Platform.Direction.Y * this.Platform.Speed * deltaTime;
       }
 
       this.Collision(true);
 
-      if (IsSet(this.ActivatedPowers, (byte)PlayerStats.VerticalMovement)) {
+      if (IsSet(this.Stats, (uint)PlayerStats.VerticalMovement)) {
         this.Velocity.Y = this.Direction.Y * this.MovementSpeed * deltaTime;
         this.Rect.Y += this.Velocity.Y;
         return;
       }
 
-      if (IsSet(this.ActivatedPowers, (byte)PlayerPowers.Honey)) {
-        if (IsSet(this.OnSurface, (byte)PlayerSurfaces.Top)) {
-          Set(ref this.OnSurface, (byte)PlayerSurfaces.StickingCeiling, true);
+      if (IsSet(this.Stats, (uint)PlayerStats.Honey)) {
+        if (IsSet(this.Stats, (uint)PlayerStats.Top)) {
+          Set(ref this.Stats, (uint)PlayerStats.StickingCeiling, true);
           this.Direction.Y = 0;
           this.Rect.Y -= 1;
-        } else if (!this.Timers[(byte)PlayerTimers.WallJump].Active && !IsSet(this.OnSurface, (byte)PlayerSurfaces.Bottom) && (IsSet(this.OnSurface, (byte)PlayerSurfaces.Left) || IsSet(this.OnSurface, (byte)PlayerSurfaces.Right))) {
+        } else if (!this.Timers[(uint)PlayerTimers.WallJump].Active && !IsSet(this.Stats, (uint)PlayerStats.Bottom) && (IsSet(this.Stats, (uint)PlayerStats.Left) || IsSet(this.Stats, (uint)PlayerStats.Right))) {
           this.Direction.Y = 0;
         }
       }
@@ -566,47 +629,50 @@ namespace Cube_Run_C_ {
     }
 
     private void StartJump() {
-      this.Direction.Y = 1;
-
-      if (IsSet(this.OnSurface, (byte)PlayerSurfaces.Bottom)) {
-        this.Timers[(byte)PlayerTimers.WallJump].Activate();
+      if (IsSet(this.Stats, (uint)PlayerStats.Bottom) && !IsSet(this.Stats, (uint)PlayerStats.Top)) {
+        this.Timers[(uint)PlayerTimers.WallJump].Activate();
+        this.Direction.Y = 1;
         this.Velocity.Y = -this.JumpHeight;
         this.Rect.Y -= 2;
       } else {
-        if (IsSet(this.ActivatedPowers, (byte)PlayerPowers.Honey) && !this.Timers[(byte)PlayerTimers.WallJump].Active && (IsSet(this.OnSurface, (byte)PlayerSurfaces.Left) || IsSet(this.OnSurface, (byte)PlayerSurfaces.Right))) {
-          this.Timers[(byte)PlayerTimers.WallJumpStun].Activate();
+        if (IsSet(this.Stats, (uint)PlayerStats.Honey) && !this.Timers[(uint)PlayerTimers.WallJump].Active && (IsSet(this.Stats, (uint)PlayerStats.Left) || IsSet(this.Stats, (uint)PlayerStats.Right))) {
+          this.Timers[(uint)PlayerTimers.WallJumpStun].Activate();
+          this.Direction.Y = 1;
+          this.Direction.X = (IsSet(this.Stats, (uint)PlayerStats.Left) ? 1 : -1) * 1.5f;
           this.Velocity.Y = -this.JumpHeight;
-          this.Direction.X = (IsSet(this.OnSurface, (byte)PlayerSurfaces.Left) ? 1 : -1) * 1.5f;
         }
       }
     }
 
 
     private void CheckContact() {
-      RectangleF[] Rectangles = [
-        new(this.Rect.X - 2, this.Rect.Y + this.Rect.Height * 0.25f, 2, this.Rect.Height * 0.5f),
-        new(this.Rect.X, this.Rect.Y - 2, this.Rect.Width, 2),
-        new(this.Rect.Right, this.Rect.Y + this.Rect.Height * 0.25f, 2, this.Rect.Height * 0.5f),
-        new(this.Rect.X, this.Rect.Bottom, this.Rect.Width, 2)
-      ];
+      Set(ref this.Stats, (uint)PlayerStats.Left, false);
+      Set(ref this.Stats, (uint)PlayerStats.Right, false);
+      Set(ref this.Stats, (uint)PlayerStats.Top, false);
+      Set(ref this.Stats, (uint)PlayerStats.Bottom, false);
+
+      this.CollisionRectangles[0] = new(this.Rect.X - 2, this.Rect.Y + this.Rect.Height * 0.25f, 2, this.Rect.Height);
+      this.CollisionRectangles[1] = new(this.Rect.Right, this.Rect.Y + this.Rect.Height * 0.25f, 2, this.Rect.Height * 0.5f);
+      this.CollisionRectangles[2] = new(this.Rect.X, this.Rect.Y - this.Rect.Height * 0.25f, this.Rect.Width, this.Rect.Height * 0.25f);
+      this.CollisionRectangles[3] = new(this.Rect.X, this.Rect.Bottom, this.Rect.Width, this.Rect.Height * 0.25f);
       this.Platform = null;
 
-      for (int I = 0; I < Rectangles.Length; I++) {
-        (Sprite, bool) WallCollision = SpriteGroups[(uint)Groups.Collidable].OverlapsWith(Rectangles[I]);
+      for (int I = 0; I < this.CollisionRectangles.Length; I++) {
+        Sprite WallCollision = SpriteGroups[(uint)Groups.Collidable].OverlapsWith(this.CollisionRectangles[I]);
         bool SemiCollision = false;
 
-        if (!WallCollision.Item2) {
+        if (WallCollision == null) {
           List<Sprite> SemiCollidables = SpriteGroups[(int)Groups.SemiCollidable].SpriteList;
 
           for (int Index = 0; Index < SemiCollidables.Count; Index++) {
 
           }
         } else if (I == 3) {
-          if (WallCollision.Item1 is MovingSprite MovingSprite && WallCollision.Item1.Rect != WallCollision.Item1.OldRect)
+          if (WallCollision is MovingSprite MovingSprite && WallCollision.Rect != WallCollision.OldRect)
             this.Platform = MovingSprite;
         }
 
-        Set(ref this.OnSurface, (byte)(1 << I), WallCollision.Item2 || SemiCollision);
+        Set(ref this.Stats, (uint)(1 << (I + 8)), WallCollision != null || SemiCollision);
       }
     }
 
@@ -627,17 +693,22 @@ namespace Cube_Run_C_ {
       bool Horizontal = direction == 'L' || direction == 'R';
 
       switch (direction) {
-        case 'L':
+        case 'R':
           this.CollisionPosition(WallRect.X - this.Rect.Width, Horizontal);
           break;
-        case 'R':
+        case 'L':
           this.CollisionPosition(WallRect.Right, Horizontal);
           break;
-        case 'U':
-          this.CollisionPosition(WallRect.Y - this.Rect.Height, Horizontal);
-          break;
         case 'D':
+          this.CollisionPosition(WallRect.Y - this.Rect.Height, Horizontal);
+          Set(ref this.Stats, (uint)PlayerStats.Bottom, true);
+
+          if (wall is MovingSprite MovingSprite)
+            this.Platform = MovingSprite;
+          break;
+        case 'U':
           this.CollisionPosition(WallRect.Bottom, Horizontal);
+          Set(ref this.Stats, (uint)PlayerStats.Top, true);
           break;
         default:
           this.Rect.TopLeft(wall.Rect.TopLeft());
@@ -650,14 +721,16 @@ namespace Cube_Run_C_ {
       for (int Index = 0; Index < SpriteGroups[(int)Groups.Collidable].SpriteList.Count; Index++) {
         Sprite Wall = SpriteGroups[(int)Groups.Collidable].SpriteList[Index];
 
-        if (!Wall.Rect.IntersectsWith(this.Rect)) continue;
+        if (!Wall.Rect.IntersectsWith(this.Rect))
+          continue;
 
         this.HandleWallCollision(Wall, CollisionDirection(this, Wall, horizontal ? 'H' : 'V'));
       }
       for (int Index = 0; Index < SpriteGroups[(int)Groups.SemiCollidable].SpriteList.Count; Index++) {
         Spring SemiWall = (Spring)SpriteGroups[(int)Groups.SemiCollidable].SpriteList[Index];
 
-        if (!SemiWall.Rect.IntersectsWith(this.Rect)) continue;
+        if (!SemiWall.Rect.IntersectsWith(this.Rect))
+          continue;
 
         char Direction = CollisionDirection(this, SemiWall, horizontal ? 'H' : 'V');
 
@@ -667,6 +740,16 @@ namespace Cube_Run_C_ {
       }
     }
 
+
+    public void Lantern(bool active) {
+      BrightnessEffect.Parameters["LanternEnabled"].SetValue(active);
+      Set(ref this.Stats, (uint)PlayerStats.LanternEnabled, active);
+    }
+
+    public void ActivateCheckpoint(Vector2 position, byte index) {
+      this.RespawnPos = position;
+      Set(ref this.Stats, (uint)(1 << (index + 27)), true);
+    }
 
     public void Teleport(Teleporter teleportPortal) {
       this.Rect.TopLeft(Level.TeleportLocations[teleportPortal.ID]);
@@ -707,31 +790,177 @@ namespace Cube_Run_C_ {
       this.CheckContact();
       this.DeathConditions();
 
+      if (this.OldRect.X != this.Rect.X | this.OldRect.Y != this.Rect.Y) 
+        Camera.UpdateSpritePosition(this);
+
+      base.Update(deltaTime);
+    }
+  }
+
+
+  public class DeathCube : MovingSprite {
+    private readonly bool Horizontal;
+    private bool Active;
+
+
+    public DeathCube(Vector2 position, ushort speed, bool horizontal, bool active) : base(GetTexture($"Images/EnemyImages/{(active ? "DeathCube" : "DeadDeathCube")}"), position, new(horizontal ? 1 : 0, horizontal ? 0 : 1), speed, active ? new() { Groups.All, Groups.Damage } : new() { Groups.All, Groups.Damage, Groups.Switch } , ZLayers.Main) {
+      this.Horizontal = horizontal;
+      this.Active = active;
+    }
+
+
+    public void Activate() {
+      if (this.Active)
+        return;
+
+      this.Image = GetTexture($"Images/EnemyImages/DeathCube");
+      this.Active = true;
+    }
+
+
+    public override void Update(float deltaTime) {
+      if (!this.Active)
+        return;
+
+      for (int Index = 0; Index < SpriteGroups[(int)Groups.Collidable].SpriteList.Count; Index++) {
+        Sprite Wall = SpriteGroups[(int)Groups.Collidable].SpriteList[Index];
+
+        if (!this.Rect.IntersectsWith(Wall.Rect))
+          continue;
+
+        switch (CollisionDirection(this, Wall, this.Horizontal ? 'H' : 'V')) {
+          case 'L':
+          case 'R':
+            this.Direction.X *= -1;
+            break;
+          case 'U':
+          case 'D':
+            this.Direction.Y *= -1;
+            break;
+        }
+      }
+
+
+      base.Update(deltaTime);
+    }
+  }
+
+  public class Prowler : MovingSprite {
+    private readonly bool Horizontal;
+
+
+    public Prowler(Vector2 position, ushort speed, bool horizontal) : base(GetTexture("Images/EnemyImages/Prowler"), position, new(horizontal ? 1 : 0, horizontal ? 0 : 1), speed, new() { Groups.All, Groups.Damage }, ZLayers.Main) {
+      this.Horizontal = horizontal;
+    }
+
+
+    public override void Update(float deltaTime) {
+      if (this.Horizontal) {
+        if (this.Rect.X < Globals.Player.Rect.X) {
+          this.Direction.X = 1;
+        } else if (this.Rect.X > Globals.Player.Rect.X) {
+          this.Direction.X = -1;
+        } else {
+          this.Direction.X = 0;
+        }
+      } else {
+        if (this.Rect.Y < Globals.Player.Rect.Y) {
+          this.Direction.Y = 1;
+        } else if (this.Rect.Y > Globals.Player.Rect.Y) {
+          this.Direction.Y = -1;
+        } else {
+          this.Direction.Y = 0;
+        }
+      }
+
+
+      for (int Index = 0; Index < SpriteGroups[(int)Groups.Collidable].SpriteList.Count; Index++) {
+        Sprite Wall = SpriteGroups[(int)Groups.Collidable].SpriteList[Index];
+
+        if (!this.Rect.IntersectsWith(Wall.Rect))
+          continue;
+
+        switch (CollisionDirection(this, Wall, this.Horizontal ? 'H' : 'V')) {
+          case 'L':
+            this.Rect.X = Wall.Rect.X + this.Rect.Width;
+            this.Direction.X = 0;
+            break;
+          case 'R':
+            this.Rect.X = Wall.Rect.X - this.Rect.Width;
+            this.Direction.X = 0;
+            break;
+          case 'U':
+            this.Rect.Y = Wall.Rect.Y - this.Rect.Height;
+            this.Direction.Y = 0;
+            break;
+          case 'D':
+            this.Rect.Y = Wall.Rect.Y + this.Rect.Height;
+            this.Direction.Y = 0;
+            break;
+        }
+      }
+      
+
       base.Update(deltaTime);
     }
   }
 
 
   public class Item : Sprite {
-    public string Name;
+    public string DeactivatorImage;
     public bool Active;
 
 
-    public Item(Texture2D texture, Vector2 position, List<Groups> groups, ZLayers z, string name, bool active, Directions faceDirection = Directions.Left) : base(texture, position, groups, z, faceDirection) {
-      this.Name = name;
+    public Item(Texture2D texture, Vector2 position, List<Groups> groups, ZLayers z, string deactiavatorImage, bool active, Directions faceDirection = Directions.Left) : base(texture, position, groups, z, faceDirection) {
+      this.DeactivatorImage = deactiavatorImage;
       this.Active = active;
     }
 
-    public Item(Animation animation, Vector2 position, List<Groups> groups, ZLayers z, string name, bool active, Directions faceDirection = Directions.Left) : base(animation, position, groups, z, faceDirection) {
-      this.Name = name;
+    public Item(Animation animation, Vector2 position, List<Groups> groups, ZLayers z, string deactiavatorImage, bool active, Directions faceDirection = Directions.Left) : base(animation, position, groups, z, faceDirection) {
+      this.DeactivatorImage = deactiavatorImage;
       this.Active = active;
     }
 
 
     public void Deactivate() {
-      if (!this.Active) return;
+      if (!this.Active) 
+        return;
 
-      this.Image = GetTexture($"Images/TileImages/{Name}Off");
+      this.Image = GetTexture(this.DeactivatorImage);
+      this.Active = false;
+    }
+  }
+
+  public class SwitchBlock : Sprite {
+    public string DeactivatorImagePath;
+
+
+    public SwitchBlock(Texture2D texture, Vector2 position, List<Groups> groups, ZLayers z, string deactivatorImage, Directions faceDirection) : base(texture, position, groups, z, faceDirection) {
+      this.DeactivatorImagePath = deactivatorImage;
+    }
+  }
+
+  public class LifeBlock : Sprite {
+    public bool Switch;
+    public bool Active = true;
+
+
+    public LifeBlock(Vector2 position, bool switchBlock) : base(GetTexture($"Images/TileImages/{(switchBlock ? "LifeBlockSwitch" : "LifeBlockOn")}"), position, switchBlock ? [Groups.All, Groups.Switch, Groups.Item] : [Groups.All, Groups.Item], ZLayers.Opaque) {
+      this.Switch = switchBlock;
+    }
+
+
+    public void Activate(bool switchActivator) {
+      if (this.Switch && switchActivator) {
+        this.Image = GetTexture("Images/TileImages/LifeBlockOn");
+        this.Switch = false;
+        return;
+      }
+
+      if (!this.Active || switchActivator)
+        return;
+
+      this.Image = GetTexture("Images/CollectableImages/LifeBlockOff");
       this.Active = false;
     }
   }
@@ -741,16 +970,17 @@ namespace Cube_Run_C_ {
     public byte ID;
     public bool Active;
 
-    public Teleporter(Texture2D texture, Vector2 position, byte id, bool active) : base(texture, position, new() { Groups.All, Groups.Teleporter }, ZLayers.Main) {
+    public Teleporter(Texture2D texture, Vector2 position, byte id, bool active) : base(texture, position, active ? [Groups.All, Groups.Teleporter] : [Groups.All, Groups.Teleporter, Groups.Switch], ZLayers.Main) {
       this.ID = id;
       this.Active = active;
     }
 
 
     public void Activate() {
-      if (this.Active) return;
+      if (this.Active)
+        return;
 
-      this.Image = GetTexture("TeleporterPortalOn");
+      this.Image = GetTexture("Images/TileImages/TeleportPortalOn");
       this.Active = true;
     }
   }
@@ -768,6 +998,12 @@ namespace Cube_Run_C_ {
       this.Multi = multi;
 
       if (multi) this.CollisionDirections.Remove(OppositeDirection(faceDirection));
+    }
+
+
+    public override void Update(float deltaTime) {
+      if (!this.Active)
+        return;
     }
   }
 }
