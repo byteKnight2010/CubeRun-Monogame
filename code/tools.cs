@@ -20,6 +20,13 @@ namespace Cube_Run_C_ {
       Middle
     }
 
+    [Flags]
+    public enum SpriteGroupProperties : byte {
+      SpritesMoved = 1 << 0,
+      UseQuery = 1 << 1,
+      GridDirty = 1 << 2
+    }
+
 
     public struct LevelStats {
       public ushort Deaths;
@@ -59,6 +66,20 @@ namespace Cube_Run_C_ {
       public static readonly SpriteTransform Default = new(0f, SpriteEffects.None);
     }
 
+    public struct IVector2 {
+      public int X;
+      public int Y;
+
+
+      public IVector2(int x, int y) {
+        this.X = x;
+        this.Y = y;
+      }
+
+
+      public static readonly IVector2 Zero = new(0, 0);
+    }
+
     public struct Dimensions {
       public int Width;
       public int Height;
@@ -77,6 +98,7 @@ namespace Cube_Run_C_ {
       public float Width;
       public float Height;
 
+
       public DimensionsF(float w, float h) {
         this.Width = w;
         this.Height = h;
@@ -94,6 +116,23 @@ namespace Cube_Run_C_ {
         this.Position = position;
         this.Text = text;
       }
+
+
+      public static readonly DisplayText Empty = new("", Vector2.Zero);
+    }
+
+    public struct Circle {
+      public Vector2 Center;
+      public float Radius;
+
+
+      public Circle(Vector2 center, float radius) {
+        this.Center = center;
+        this.Radius = radius;
+      }
+
+
+      public static readonly Circle Zero = new(Vector2.Zero, 0f);
     }
 
 
@@ -116,16 +155,16 @@ namespace Cube_Run_C_ {
 
 
       public static bool ChangeControl(GameAction action) {
-        Keys[] PressedKeys = InputManager.CurrentState.GetPressedKeys();
+        Keys[] PressedKeys = CurrentState.GetPressedKeys();
 
         if (PressedKeys.Length > 0) {
-          InputManager.Controls[action] = (PressedKeys[0], InputManager.Controls[action].Item2);
+          Controls[action] = (PressedKeys[0], Controls[action].Item2);
           return true;
-        } else if (InputManager.CurrentGamePadState.IsConnected) {
+        } else if (CurrentGamePadState.IsConnected) {
           Buttons? PressedButton = GetPressedButton();
 
-          if (PressedButton != null && InputManager.IsButtonPressed(PressedButton.Value)) {
-            InputManager.Controls[action] = (InputManager.Controls[action].Item1, PressedButton.Value);
+          if (PressedButton != null && IsButtonPressed(PressedButton.Value)) {
+            Controls[action] = (Controls[action].Item1, PressedButton.Value);
             return true;
           }
         }
@@ -134,31 +173,27 @@ namespace Cube_Run_C_ {
       }
 
       public static bool CheckAction(GameAction action, bool hold) {
-        (Keys, Buttons) ActionInputs = InputManager.Controls[action];
+        (Keys, Buttons) ActionInputs = Controls[action];
 
         if (hold) {
-          return InputManager.IsKeyPressed(ActionInputs.Item1) || InputManager.IsButtonPressed(ActionInputs.Item2);
+          return IsKeyPressed(ActionInputs.Item1) || IsButtonPressed(ActionInputs.Item2);
         } else {
-          return InputManager.IsKeyDown(ActionInputs.Item1) || InputManager.IsButtonDown(ActionInputs.Item2);
+          return IsKeyDown(ActionInputs.Item1) || IsButtonDown(ActionInputs.Item2);
         }
       }
 
       private static bool CheckMouseButton(MouseButton button, MouseState state, ButtonState checkState) {
-        switch (button) {
-          case MouseButton.Left:
-            return state.LeftButton == checkState;
-          case MouseButton.Middle:
-            return state.RightButton == checkState;
-          case MouseButton.Right:
-            return state.MiddleButton == checkState;
-        }
-
-        return false;
+        return button switch {
+          MouseButton.Left => state.LeftButton == checkState,
+          MouseButton.Middle => state.RightButton == checkState,
+          MouseButton.Right => state.MiddleButton == checkState,
+          _ => false,
+        };
       }
 
 
       private static Buttons? GetPressedButton() {
-        GamePadState State = InputManager.CurrentGamePadState;
+        GamePadState State = CurrentGamePadState;
 
         if (State.Buttons.A == ButtonState.Pressed) return Buttons.A;
         if (State.Buttons.B == ButtonState.Pressed) return Buttons.B;
@@ -184,38 +219,65 @@ namespace Cube_Run_C_ {
 
 
       public static void Update() {
-        InputManager.PreviousMouseState = InputManager.CurrentMouseState;
-        InputManager.CurrentMouseState = Mouse.GetState();
-        InputManager.PreviousState = InputManager.CurrentState;
-        InputManager.CurrentState = Keyboard.GetState();
-        InputManager.PreviousGamePadState = InputManager.CurrentGamePadState;
-        InputManager.CurrentGamePadState = GamePad.GetState(PlayerIndex.One);
+        PreviousMouseState = CurrentMouseState;
+        CurrentMouseState = Mouse.GetState();
+        PreviousState = CurrentState;
+        CurrentState = Keyboard.GetState();
+        PreviousGamePadState = CurrentGamePadState;
+        CurrentGamePadState = GamePad.GetState(PlayerIndex.One);
       }
 
 
-      public static Point MousePosition() => InputManager.CurrentMouseState.Position;
-      public static bool IsMouseButtonDown(MouseButton button) => InputManager.CheckMouseButton(button, InputManager.CurrentMouseState, ButtonState.Pressed);
-      public static bool IsMouseButtonUp(MouseButton button) => InputManager.CheckMouseButton(button, InputManager.CurrentMouseState, ButtonState.Released);
-      public static bool IsMouseButtonPressed(MouseButton button) => InputManager.CheckMouseButton(button, InputManager.CurrentMouseState, ButtonState.Pressed) && InputManager.CheckMouseButton(button, InputManager.PreviousMouseState, ButtonState.Released);
-      public static bool IsMouseButtonReleased(MouseButton button) => InputManager.CheckMouseButton(button, InputManager.CurrentMouseState, ButtonState.Released) && InputManager.CheckMouseButton(button, InputManager.PreviousMouseState, ButtonState.Pressed);
-      public static bool IsKeyDown(Keys key) => InputManager.CurrentState.IsKeyDown(key);
-      public static bool IsKeyUp(Keys key) => InputManager.CurrentState.IsKeyUp(key);
-      public static bool IsKeyPressed(Keys key) => InputManager.CurrentState.IsKeyDown(key) && InputManager.PreviousState.IsKeyUp(key);
-      public static bool IsKeyReleased(Keys key) => InputManager.CurrentState.IsKeyUp(key) && InputManager.PreviousState.IsKeyDown(key);
-      public static bool IsGamePadConnected() => InputManager.CurrentGamePadState.IsConnected;
-      public static bool IsButtonDown(Buttons button) => InputManager.CurrentGamePadState.IsButtonDown(button);
-      public static bool IsButtonUp(Buttons button) => InputManager.CurrentGamePadState.IsButtonUp(button);
-      public static bool IsButtonPressed(Buttons button) => InputManager.CurrentGamePadState.IsButtonDown(button) && InputManager.PreviousGamePadState.IsButtonUp(button);
-      public static bool IsButtonReleased(Buttons button) => InputManager.CurrentGamePadState.IsButtonUp(button) && InputManager.PreviousGamePadState.IsButtonDown(button);
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static Point MousePosition() => CurrentMouseState.Position;
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsMouseButtonDown(MouseButton button) => CheckMouseButton(button, CurrentMouseState, ButtonState.Pressed);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsMouseButtonUp(MouseButton button) => CheckMouseButton(button, CurrentMouseState, ButtonState.Released);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsMouseButtonPressed(MouseButton button) => CheckMouseButton(button, CurrentMouseState, ButtonState.Pressed) && CheckMouseButton(button, PreviousMouseState, ButtonState.Released);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsMouseButtonReleased(MouseButton button) => CheckMouseButton(button, CurrentMouseState, ButtonState.Released) && CheckMouseButton(button, PreviousMouseState, ButtonState.Pressed);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsKeyDown(Keys key) => CurrentState.IsKeyDown(key);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsKeyUp(Keys key) => CurrentState.IsKeyUp(key);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsKeyPressed(Keys key) => CurrentState.IsKeyDown(key) && PreviousState.IsKeyUp(key);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsKeyReleased(Keys key) => CurrentState.IsKeyUp(key) && PreviousState.IsKeyDown(key);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsGamePadConnected() => CurrentGamePadState.IsConnected;
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsButtonDown(Buttons button) => CurrentGamePadState.IsButtonDown(button);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsButtonUp(Buttons button) => CurrentGamePadState.IsButtonUp(button);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsButtonPressed(Buttons button) => CurrentGamePadState.IsButtonDown(button) && PreviousGamePadState.IsButtonUp(button);
+      
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsButtonReleased(Buttons button) => CurrentGamePadState.IsButtonUp(button) && PreviousGamePadState.IsButtonDown(button);
     }
 
     public static class Assets {
       static private Dictionary<string, Texture2D> TextureCache = new();
-      static public SpriteTransform[] DirectionRotations = [
+      static readonly public SpriteTransform[] DirectionRotations = [
         SpriteTransform.Default,
         new(0f, SpriteEffects.FlipHorizontally),
-        new(MathHelper.PiOver2, SpriteEffects.None),
-        new(MathHelper.PiOver2, SpriteEffects.None)
+        new(-MathHelper.PiOver2, SpriteEffects.None),
+        new(MathHelper.PiOver2, SpriteEffects.FlipVertically)
       ];
       static public GraphicsDevice GraphicsDevice;
       static public ContentManager Content;
@@ -249,13 +311,7 @@ namespace Cube_Run_C_ {
         }
       }
 
-      public static void UnloadAllTextures() {
-        foreach (Texture2D Texture in TextureCache.Values) {
-          Texture.Dispose();
-        }
-
-        TextureCache.Clear();
-      }
+      public static void UnloadAllTextures() => TextureCache.Clear();
     }
 
     public static class SaveSystem {
@@ -265,18 +321,17 @@ namespace Cube_Run_C_ {
 
 
       public static string Save() {
-        using (FileStream Stream = File.Open(SaveFile, FileMode.Create))
-        using (BinaryWriter Writer = new(Stream)) {
-          Writer.Write(SAVE_VERSION);
-          Writer.Write(PlayerData.Lives);
-          Writer.Write(PlayerData.CurrentLevel);
-          Writer.Write(LevelStats.Count);
+        using FileStream Stream = File.Open(SaveFile, FileMode.Create);
+        using BinaryWriter Writer = new(Stream);
+        Writer.Write(SAVE_VERSION);
+        Writer.Write(PlayerData.Lives);
+        Writer.Write(PlayerData.CurrentLevel);
+        Writer.Write(LevelStats.Count);
 
-          for (int Index = 0; Index < LevelStats.Count; Index++) {
-            Writer.Write(LevelStats[Index].Deaths);
-            Writer.Write(LevelStats[Index].Coins);
-            Writer.Write(LevelStats[Index].LifeBlocks);
-          }
+        for (int Index = 0; Index < LevelStats.Count; Index++) {
+          Writer.Write(LevelStats[Index].Deaths);
+          Writer.Write(LevelStats[Index].Coins);
+          Writer.Write(LevelStats[Index].LifeBlocks);
         }
 
         return "Save successful.";
@@ -286,25 +341,24 @@ namespace Cube_Run_C_ {
         if (!File.Exists(SaveFile))
           return "Load failed. Save file does not exist.";
 
-        using (FileStream Stream = File.Open(SaveFile, FileMode.Open))
-        using (BinaryReader Reader = new BinaryReader(Stream)) {
-          int Version = Reader.ReadByte();
+        using FileStream Stream = File.Open(SaveFile, FileMode.Open);
+        using BinaryReader Reader = new BinaryReader(Stream);
+        int Version = Reader.ReadByte();
 
-          if (Version > SAVE_VERSION)
-            return "Load failed. Save file version is newer than game supports.";
+        if (Version > SAVE_VERSION)
+          return "Load failed. Save file version is newer than game supports.";
 
-          PlayerData.Lives = Reader.ReadUInt16();
-          PlayerData.CurrentLevel = Reader.ReadByte();
-          int LevelCount = Reader.ReadInt32();
+        PlayerData.Lives = Reader.ReadUInt16();
+        PlayerData.CurrentLevel = Reader.ReadByte();
+        int LevelCount = Reader.ReadInt32();
 
-          LevelStats.Clear();
-          for (int Index = 0; Index < LevelCount; Index++) {
-            ushort Deaths = Reader.ReadUInt16();
-            ushort Coins = Reader.ReadUInt16();
-            byte LifeBlocks = Reader.ReadByte();
+        LevelStats.Clear();
+        for (int Index = 0; Index < LevelCount; Index++) {
+          ushort Deaths = Reader.ReadUInt16();
+          ushort Coins = Reader.ReadUInt16();
+          byte LifeBlocks = Reader.ReadByte();
 
-            LevelStats[Index] = new(Deaths, Coins, LifeBlocks);
-          }
+          LevelStats[Index] = new(Deaths, Coins, LifeBlocks);
         }
 
         return "Load successful.";
@@ -336,6 +390,9 @@ namespace Cube_Run_C_ {
     }
 
     public static class Engine {
+      public static Random RNG = new();
+
+
       public static CollisionResult Overlap(Sprite spriteA, Sprite spriteB) => new(spriteA.Rect.IntersectsWith(spriteB.Rect), spriteA, spriteB);
 
 
@@ -350,25 +407,26 @@ namespace Cube_Run_C_ {
 
       public static bool OverlappingAny(RectangleF spriteRect, List<Groups> groups) {
         for (int Index = 0; Index < groups.Count; Index++) {
-          if (SpriteGroups[(int)groups[Index]].OverlapsWith(spriteRect).Item2)
+          if (SpriteGroups[(int)groups[Index]].OverlapsWith(spriteRect) != null)
             return true;
         }
 
         return false;
       }
 
+      public static bool InScreen(Vector2 position) => position.X >= 0 && position.X < Camera.ScreenDimensions.Width && position.Y >= 0 && position.Y < Camera.ScreenDimensions.Height;
+
       public static char CollisionDirection(Sprite sprite, Sprite target, char check) {
         RectangleF MainRect = sprite.Rect;
         RectangleF MainOldRect = sprite.OldRect;
         RectangleF TargetRect = target.Rect;
-        RectangleF TargetOldRect = target.OldRect;
 
         if (check == 'H' || check == 'A') {
-          if (MainOldRect.Right <= TargetRect.X && MainRect.Right > TargetRect.X) return 'L';
-          if (MainOldRect.X >= TargetRect.Right && MainRect.X < TargetRect.Right) return 'R';
+          if (MainOldRect.Right <= TargetRect.X && MainRect.Right > TargetRect.X) return 'R';
+          if (MainOldRect.X >= TargetRect.Right && MainRect.X < TargetRect.Right) return 'L';
         } else if (check == 'V' || check == 'A') {
-          if (MainOldRect.Bottom <= TargetRect.Y && MainRect.Bottom > TargetRect.Y) return 'U';
-          if (MainOldRect.Y >= TargetRect.Bottom && MainRect.Y < TargetRect.Bottom) return 'D';
+          if (MainOldRect.Bottom <= TargetRect.Y && MainRect.Bottom > TargetRect.Y) return 'D';
+          if (MainOldRect.Y >= TargetRect.Bottom && MainRect.Y < TargetRect.Bottom) return 'U';
         }
 
         return 'N';
@@ -381,6 +439,9 @@ namespace Cube_Run_C_ {
         'D' => 'U',
         _ => ' '
       };
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static float ToRadians(float degrees) => degrees * RADIAN_FACTOR;
 
       public static Directions StringToDirection(char direction) => direction switch {
         'R' => Directions.Right,
@@ -404,10 +465,38 @@ namespace Cube_Run_C_ {
       }
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static void SetAll(ref byte mask, bool value) => mask = value ? (byte)0b11111111 : (byte)0b00000000;
+      public static void SetAll(ref byte mask, bool value) => mask = value ? (byte)0xFF : (byte)0x00;
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static bool Any(byte mask) => (mask & 0b11111111) != 0;
+      public static void Flip(ref byte mask, byte index) => mask ^= index;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool Any(byte mask) => (mask & 0xFF) != 0;
+
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool IsSet(uint mask, uint index) => (mask & index) != 0;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static void Set(ref uint mask, uint index, bool value) {
+        if (value) {
+          mask |= index;
+        } else {
+          mask &= (uint)~index;
+        }
+      }
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static void SetAll(ref uint mask, bool value) => mask = value ? 0xFFFFFFFF : 0x00000000;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static void Flip(ref uint mask, uint index) => mask ^= index;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool Any(uint mask) => (mask & 0xFFFFFFFF) != 0;
+
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static bool Any(uint mask, uint start, uint end) => (mask & (((1u << (int)(end - start + 1)) - 1u) << (int)start)) != 0;
     }
 
 
@@ -455,17 +544,24 @@ namespace Cube_Run_C_ {
 
   public static class RectangleExtensions {
     public static Vector2 TopLeft(this ref Rectangle rect) => new(rect.X, rect.Y);
+    public static Vector2 FCenter(this ref Rectangle rect) => new(rect.X + rect.Width * 0.5f, rect.Y + rect.Height * 0.5f);
 
-    public static Rectangle Scaled(this Rectangle rect, float scale) => new((int)(rect.X * scale), (int)(rect.Y * scale), (int)(rect.Width * scale), (int)(rect.Height * scale));
+    public static Rectangle Scaled(this Rectangle rect, float scale) => new((int)Math.Round(rect.X * scale), (int)Math.Round(rect.Y * scale), (int)Math.Round(rect.Width * scale), (int)Math.Round(rect.Height * scale));
   }
 
   public static class RectangleFExtensions {
     public static Vector2 TopLeft(this ref RectangleF rect) => new(rect.X, rect.Y);
     public static Vector2 Center(this ref RectangleF rect) => new(rect.X + rect.Width * 0.5f, rect.Y + rect.Height * 0.5f);
 
+
     public static void TopLeft(this ref RectangleF rect, Vector2 position) {
       rect.X = position.X;
       rect.Y = position.Y;
+    }
+
+    public static void Center(this ref RectangleF rect, Vector2 position) {
+      rect.X = position.X - rect.Width * 0.5f;
+      rect.Y = position.Y - rect.Height * 0.5f;
     }
   }
 
