@@ -17,10 +17,6 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 - Side-Scrolling Camera utilizing Culling, Spatial-Grid Partitioning, Target (Player-Center), and a "Lock" feature
 - Global constants and configuration via `Globals`
 - Timer utility class for event handling
-
----
-
-## Recently Added Features
 - Basic UI with sliders
 - Window-sizing options
 - Brightness & Sound adjustment options
@@ -31,11 +27,18 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 
 ---
 
+## Recently Added Features
+- Animation Function
+- Enemy AI & Classes Implementation
+- Checkpoints
+- Coins
+- Canons
+- Multiple Spawn Locations
+
+---
+
 ## Planned Features (By next Update ideally):
-- Enemy AI and Classes implementation
 - Overworld
 - Finish Spring
 - Player powers: Invincibility, Sprinting, Honey, Auto-Move
-- Multiple possible points in a level, adding a bit of randomness
-- Checkpoints
 - Upgrade the TMX loader for less reliance on LINQ and improve efficiency
