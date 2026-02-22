@@ -6,17 +6,34 @@
     <PublishReadyToRun>false</PublishReadyToRun>
     <TieredCompilation>false</TieredCompilation>
   </PropertyGroup>
+  
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Remove="MapContentPipeline\**" />
+    <Content Remove="MapContentPipeline\**" />
+    <EmbeddedResource Remove="MapContentPipeline\**" />
+    <None Remove="MapContentPipeline\**" />
+  </ItemGroup>
+  
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="Content\**\*.*" Exclude="Content\Content.mgcb;Content\**\*.tmx;Content\obj\**;Content\bin\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  
   <ItemGroup>
     <None Remove="Icon.ico" />
     <None Remove="Icon.bmp" />
   </ItemGroup>
+  
   <ItemGroup>
     <EmbeddedResource Include="Icon.ico">
       <LogicalName>Icon.ico</LogicalName>
@@ -25,12 +42,27 @@
       <LogicalName>Icon.bmp</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
+  
   <ItemGroup>
-    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.*" />
-    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
+    <Content Include="Content\bin\DesktopGL\**\*.xnb">
+      <Link>Content\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.4.1" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.*" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+  </ItemGroup>
+  
   <Target Name="RestoreDotnetTools" BeforeTargets="CollectPackageReferences">
-    <Message Text="Restoring dotnet tools (this might take a while depending on your internet speed and should only happen upon building your project for the first time, or after upgrading MonoGame, or clearing your nuget cache)" Importance="High" />
+    <Message Text="Restoring dotnet tools" Importance="High" />
     <Exec Command="dotnet tool restore" />
+  </Target>
+  
+  <Target Name="BuildContentPipeline" BeforeTargets="BeforeBuild">
+    <Exec Command="dotnet build &quot;$(ProjectDir)MapContentPipeline\MapContentPipeline.csproj&quot; -c $(Configuration)" />
   </Target>
 </Project>
