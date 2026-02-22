@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="20" height="9" tilewidth="96" tileheight="96" infinite="0" nextlayerid="6" nextobjectid="6">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="20" height="9">
+  <data encoding="csv">
+0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,
+1,0,0,0,0,1,0,0,0,1,0,1,0,0,1,1,0,0,0,1,
+1,0,0,0,1,0,1,0,0,1,0,1,0,0,1,1,0,0,0,1,
+0,2,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="20" height="9">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,0,0,0,17,17,17,17,17,17,0,17,17,17,17,17,17,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,37,0,0,0,0,37,37,0,37,0,37,37,0,0,37,37,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="3" name="Interactable">
+  <object id="3" name="EndBall" gid="8" x="1728" y="672" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Trim" value="None"/>
+   </properties>
+  </object>
+  <object id="4" name="SwitchBlockOn" gid="12" x="1056" y="288" width="96" height="96"/>
+  <object id="5" name="SwitchBlockOn" gid="12" x="1056" y="384" width="96" height="96"/>
+ </objectgroup>
+ <objectgroup id="4" name="Collectable">
+  <object id="2" name="Switch" gid="51" x="96" y="288" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <layer id="5" name="Decoration" width="20" height="9">
+  <data encoding="csv">
+1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,1,1,1,0,0,1,0,1,0,0,1,1,0,0,0,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+</map>

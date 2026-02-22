@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="SwitchBlock" gid="12" width="96" height="96">
+  <properties>
+   <property name="Active" type="bool" value="true"/>
+  </properties>
+ </object>
+</template>

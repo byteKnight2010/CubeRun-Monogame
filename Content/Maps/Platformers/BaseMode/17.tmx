@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="32" height="12" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="29">
+ <properties>
+  <property name="BulletSpeed" type="int" value="150"/>
+  <property name="CanonFiringRate" type="float" value="5.25"/>
+  <property name="EnemySpeed" type="int" value="90"/>
+  <property name="LanternWidth" type="float" value="90"/>
+ </properties>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="32" height="12">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,1,1,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,
+1,0,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,1,0,
+1,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,0,0,0,0,1,0,
+1,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,
+0,1,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,
+1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,
+0,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="5" name="Enemies" width="32" height="12">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,37,37,0,0,0,0,0,0,0,0,0,0,0,0,0,37,37,37,37,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,17,17,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,17,17,17,17,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="6" name="Decoration" width="32" height="12">
+  <data encoding="csv">
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,1,1,1,
+1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,1,
+0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,1,
+0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,
+1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,1,1,1,1
+</data>
+ </layer>
+ <objectgroup id="2" name="Interactable">
+  <object id="6" template="../ObjectTemplates/TeleportPortalOn.tx" x="2688" y="672"/>
+  <object id="7" template="../ObjectTemplates/TeleportLocationOn.tx" x="2880" y="480"/>
+  <object id="9" template="../ObjectTemplates/StartBall.tx" x="192" y="768"/>
+  <object id="10" template="../ObjectTemplates/EndSwitchBall.tx" x="192" y="384"/>
+ </objectgroup>
+ <objectgroup id="3" name="Collectable">
+  <object id="1" template="../ObjectTemplates/Checkpoint.tx" x="1440" y="576"/>
+  <object id="8" template="../ObjectTemplates/LifeBlock.tx" x="96" y="1056"/>
+  <object id="12" template="../ObjectTemplates/Lantern.tx" x="2784" y="480"/>
+  <object id="13" template="../ObjectTemplates/Switch.tx" x="1440" y="288"/>
+  <object id="24" template="../ObjectTemplates/Coin.tx" x="1344" y="576"/>
+  <object id="25" template="../ObjectTemplates/Coin.tx" x="1536" y="576"/>
+  <object id="26" template="../ObjectTemplates/Coin.tx" x="1536" y="1056"/>
+  <object id="27" template="../ObjectTemplates/Coin.tx" x="1440" y="1056"/>
+  <object id="28" template="../ObjectTemplates/Coin.tx" x="1344" y="1056"/>
+ </objectgroup>
+ <objectgroup id="4" name="Interactable Enemies">
+  <object id="2" template="../ObjectTemplates/DeathCube.tx" x="1248" y="1056"/>
+  <object id="3" template="../ObjectTemplates/DeathCube.tx" x="1632" y="1056"/>
+  <object id="4" template="../ObjectTemplates/DeathCube.tx" x="1536" y="384"/>
+  <object id="5" template="../ObjectTemplates/DeathCube.tx" x="1344" y="384"/>
+  <object id="22" template="../ObjectTemplates/CanonFloor.tx" x="960" y="1056">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="23" template="../ObjectTemplates/CanonFloor.tx" x="1920" y="1056"/>
+ </objectgroup>
+</map>

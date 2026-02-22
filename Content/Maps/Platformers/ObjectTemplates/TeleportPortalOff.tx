@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="Teleport Start Location" gid="15" width="96" height="96">
+  <properties>
+   <property name="Active" type="bool" value="false"/>
+   <property name="ID" type="int" value="1"/>
+  </properties>
+ </object>
+</template>

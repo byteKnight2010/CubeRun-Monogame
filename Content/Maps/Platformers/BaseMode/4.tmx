@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="12" tilewidth="96" tileheight="96" infinite="0" nextlayerid="6" nextobjectid="13">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="20" height="12">
+  <data encoding="csv">
+0,1,1,1,1,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,
+1,0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,0,0,0,1,
+1,0,0,0,1,0,1,0,0,0,0,0,0,1,0,1,0,0,0,1,
+0,1,1,1,0,0,0,1,1,1,1,1,1,0,0,0,1,1,1,0,
+0,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,0,1,
+1,0,1,0,0,0,1,1,0,0,0,0,0,1,1,0,0,0,0,0,
+0,2,0,1,1,1,0,0,0,1,1,0,0,1,1,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="20" height="12">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,17,17,17,17,17,0,0,0,0,0,0,17,17,17,0,
+0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,
+0,0,0,0,0,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,17,0,0,0,0,17,0,0,0,0,0,0,0,17,17,0,
+0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,37,37,0,0,37,37,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="3" name="Collectable">
+  <object id="12" template="../ObjectTemplates/LifeBlock.tx" x="864" y="1056"/>
+ </objectgroup>
+ <layer id="5" name="Decoration" width="20" height="12">
+  <data encoding="csv">
+1,0,0,0,0,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,
+0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,
+1,0,0,0,1,1,1,0,0,0,0,0,0,1,1,1,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,
+1,0,1,0,0,0,1,1,1,0,0,1,1,0,0,1,1,1,1,1
+</data>
+ </layer>
+ <objectgroup id="4" name="Interactable">
+  <object id="2" template="../ObjectTemplates/StartBall.tx" x="96" y="1056"/>
+  <object id="3" template="../ObjectTemplates/EndBall.tx" x="1728" y="480"/>
+  <object id="4" template="../ObjectTemplates/TeleportLocationOn.tx" x="96" y="192"/>
+  <object id="5" template="../ObjectTemplates/TeleportPortalOn.tx" x="1728" y="1056"/>
+  <object id="6" template="../ObjectTemplates/TeleportPortalOn.tx" x="192" y="192"/>
+  <object id="7" template="../ObjectTemplates/TeleportPortalOn.tx" x="960" y="384"/>
+  <object id="8" template="../ObjectTemplates/TeleportPortalOn.tx" x="1440" y="192"/>
+  <object id="9" template="../ObjectTemplates/TeleportPortalOn.tx" x="768" y="1056">
+   <properties>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="10" template="../ObjectTemplates/TeleportLocationOn.tx" x="96" y="768">
+   <properties>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

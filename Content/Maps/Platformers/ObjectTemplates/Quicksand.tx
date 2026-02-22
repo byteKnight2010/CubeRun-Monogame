@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="Quicksand" gid="71" width="96" height="96">
+  <properties>
+   <property name="Deep" type="bool" value="false"/>
+  </properties>
+ </object>
+</template>

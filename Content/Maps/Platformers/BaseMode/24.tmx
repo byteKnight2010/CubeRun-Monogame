@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="32" height="16" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="40">
+ <properties>
+  <property name="CanonFiringRate" type="float" value="4"/>
+ </properties>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="32" height="16">
+  <data encoding="csv">
+0,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,1,1,1,1,0,
+1,0,0,0,0,1,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,1,1,1,0,0,0,0,0,1,0,0,0,0,1,0,0,1,0,0,1,1,1,0,0,0,1,0,
+0,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,1,0,1,0,
+0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,
+0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,
+1,0,0,0,0,1,1,1,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+1,0,0,1,1,1,0,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,
+0,1,1,1,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,
+1,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,0,
+1,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,0,1,1,1,1,1,0,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="32" height="16">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,32,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,32,23,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,17,17,0,37,37,0,0,37,37,37,0,0,37,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,17,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,37,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Decoration" width="32" height="16">
+  <data encoding="csv">
+1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,1,0,0,0,0,0,1,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+</data>
+ </layer>
+ <objectgroup id="4" name="Interactable">
+  <object id="5" name="StartBall" gid="10" x="2880" y="1248" width="96" height="96"/>
+  <object id="8" name="Teleport Start Location" gid="16" x="96" y="1152" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="23" name="Teleport Start Location" gid="16" x="96" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="9" name="Teleport End Location" gid="14" x="96" y="480" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="24" name="Teleport End Location" gid="14" x="96" y="1440" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="21" name="SwitchBlockOn" gid="12" x="288" y="192" width="96" height="96"/>
+ </objectgroup>
+ <objectgroup id="5" name="Interactable Enemies">
+  <object id="2" name="DeathCube" gid="42" x="2208" y="384" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="26" name="DeathCube" gid="42" x="2496" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="27" name="DeathCube" gid="42" x="384" y="672" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="28" name="DeathCube" gid="42" x="96" y="384" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="29" name="DeathCube" gid="42" x="672" y="1440" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="30" name="DeathCube" gid="42" x="384" y="1344" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="31" name="DeathCube" gid="42" x="672" y="1152" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="32" name="DeathCube" gid="42" x="960" y="1056" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="33" name="DeathCube" gid="42" x="960" y="1056" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="36" name="DeathCube" gid="42" x="960" y="1344" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="37" name="DeathCube" gid="42" x="480" y="1056" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="3" name="Canon" gid="56" x="2976" y="1056" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="4" name="Canon" gid="56" x="2976" y="960" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="15" name="Canon" gid="56" x="576" y="864" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="38" name="Canon" gid="56" x="768" y="768" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Right"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="16" name="Canon" gid="56" x="384" y="960" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="17" name="Canon" gid="56" x="384" y="1056" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="6" name="Canon" gid="58" x="2784" y="768" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="false"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="39" name="Canon" gid="58" x="1056" y="1248" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="false"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="19" name="SpikeOff" gid="46" x="672" y="384" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="20" name="SpikeOff" gid="46" x="576" y="384" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="Collectable">
+  <object id="1" name="LifeBlock" gid="48" x="2208" y="576" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="13" name="Switch" gid="51" x="672" y="192" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

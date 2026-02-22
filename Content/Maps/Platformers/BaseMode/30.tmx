@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.0" orientation="orthogonal" renderorder="right-down" width="37" height="17" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="74">
+ <properties>
+  <property name="CanonFiringRate" type="float" value="5.35"/>
+  <property name="EnemySpeed" type="int" value="89"/>
+ </properties>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="37" height="17">
+  <data encoding="csv">
+0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,0,1,1,0,0,0,1,0,0,1,1,1,1,1,0,
+0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,0,0,0,1,0,0,0,0,1,1,1,0,0,1,1,1,0,0,1,0,
+1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,0,0,1,0,0,1,0,0,1,1,1,1,0,0,1,
+0,1,2,1,0,0,1,0,0,0,0,0,1,1,0,1,1,0,0,1,1,0,0,1,1,1,1,1,0,1,1,0,0,0,1,0,1,
+0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,0,0,1,1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,1,1,1,1,0,1,1,0,1,1,0,0,1,1,0,1,1,1,1,1,0,0,1,1,1,1,1,0,
+0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,
+0,0,0,0,1,1,0,1,1,0,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,1,1,1,1,0,
+0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,
+0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1,
+1,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1,
+0,1,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,1,1,1,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="37" height="17">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,17,17,17,0,17,17,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,37,37,0,0,0,37,37,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,23,0,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Decoration" width="37" height="17">
+  <data encoding="csv">
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,1,0,0,1,1,1,0,1,1,0,0,0,0,0,1,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,1,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,1,
+1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,0,1,1,0,1,1,1,1,1,1,1,
+1,1,1,1,0,0,1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,0,1
+</data>
+ </layer>
+ <objectgroup id="4" name="Interactable">
+  <object id="1" name="StartBall" gid="10" x="192" y="480" width="96" height="96"/>
+  <object id="2" name="EndFragmentBall" gid="64" x="3264" y="1440" width="96" height="96"/>
+  <object id="10" name="Teleport Start Location" gid="15" x="672" y="768" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="false"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="50" name="Teleport Start Location" gid="15" x="3360" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="false"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="12" name="Teleport End Location" gid="65" x="576" y="384" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="false"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="51" name="Teleport End Location" gid="65" x="96" y="1536" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="false"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="47" name="EndBall" gid="8" x="2400" y="768" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Trim" value="LeftHalf"/>
+   </properties>
+  </object>
+  <object id="48" name="EndBall" gid="8" x="2976" y="672" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Trim" value="RightHalf"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="Collectable">
+  <object id="3" name="Checkpoint" gid="50" x="3360" y="384" width="96" height="96">
+   <properties>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="4" name="Coin" gid="54" x="1152" y="384" width="96" height="96"/>
+  <object id="5" name="Coin" gid="54" x="1248" y="288" width="96" height="96"/>
+  <object id="8" name="Coin" gid="54" x="864" y="384" width="96" height="96"/>
+  <object id="9" name="Coin" gid="54" x="576" y="480" width="96" height="96"/>
+  <object id="6" name="Coin" gid="54" x="1440" y="288" width="96" height="96"/>
+  <object id="7" name="Coin" gid="54" x="1536" y="384" width="96" height="96"/>
+  <object id="44" name="Coin" gid="54" x="2592" y="768" width="96" height="96"/>
+  <object id="45" name="Coin" gid="54" x="2496" y="768" width="96" height="96"/>
+  <object id="11" name="Switch" gid="51" x="1440" y="576" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="46" name="LifeBlock" gid="48" x="2304" y="768" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="49" name="Lantern" gid="53" x="288" y="1344" width="96" height="96"/>
+ </objectgroup>
+ <objectgroup id="6" name="Interactable Enemies">
+  <object id="13" name="FallingSpike" gid="45" x="576" y="192" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="14" name="FallingSpike" gid="45" x="864" y="192" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="15" name="FallingSpike" gid="45" x="576" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="18" name="FallingSpike" gid="45" x="1152" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="20" name="FallingSpike" gid="45" x="1728" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="39" name="FallingSpike" gid="45" x="2112" y="384" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="35" name="FallingSpike" gid="45" x="2688" y="192" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="38" name="FallingSpike" gid="45" x="3168" y="192" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="37" name="FallingSpike" gid="45" x="3264" y="192" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="22" name="FallingSpike" gid="45" x="2304" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="16" name="FallingSpike" gid="45" x="864" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="17" name="FallingSpike" gid="45" x="1440" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="33" name="FallingSpike" gid="45" x="1632" y="768" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="40" name="FallingSpike" gid="45" x="2016" y="768" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="19" name="FallingSpike" gid="45" x="2016" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="21" name="FallingSpike" gid="45" x="2592" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="26" name="FallingSpike" gid="45" x="2496" y="1536" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="true"/>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="58" name="FallingSpike" gid="45" x="2208" y="1536" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="true"/>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="59" name="FallingSpike" gid="45" x="2784" y="1536" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="true"/>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+  <object id="23" name="FallingSpike" gid="45" x="2880" y="1344" width="96" height="96">
+   <properties>
+    <property name="Automatic" type="bool" value="false"/>
+    <property name="LimitedRange" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="41" name="Canon" gid="56" x="2880" y="768" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Right"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="42" name="Canon" gid="56" x="2784" y="768" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="56" name="Canon" gid="56" x="1344" y="960" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Left"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="43" name="Prowler" gid="43" x="3168" y="672" width="96" height="96">
+   <properties>
+    <property name="Horizontal" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="64" name="FallingSpikeBlock" gid="18" x="2208" y="1152" width="96" height="96"/>
+  <object id="65" name="FallingSpikeBlock" gid="18" x="2496" y="1152" width="96" height="96"/>
+  <object id="66" name="FallingSpikeBlock" gid="18" x="2784" y="1152" width="96" height="96"/>
+  <object id="67" name="SpikeOn" gid="47" x="1344" y="192" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="68" name="SpikeOn" gid="47" x="1344" y="288" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="69" name="SpikeOn" gid="47" x="1344" y="384" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="70" name="Canon" gid="58" x="1344" y="1152" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="71" name="Canon" gid="58" x="1632" y="1152" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="72" name="Canon" gid="58" x="1920" y="1152" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="false"/>
+    <property name="Orientation" value="Down"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

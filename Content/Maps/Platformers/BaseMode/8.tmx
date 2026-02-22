@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="35" height="11" tilewidth="96" tileheight="96" infinite="0" nextlayerid="6" nextobjectid="34">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="35" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,1,0,0,
+1,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="2" name="Interactable">
+  <object id="4" template="../ObjectTemplates/SwitchBlockOn.tx" x="192" y="672"/>
+  <object id="5" template="../ObjectTemplates/SwitchBlockOn.tx" x="192" y="576"/>
+  <object id="6" template="../ObjectTemplates/SwitchBlockOn.tx" x="192" y="480"/>
+  <object id="7" template="../ObjectTemplates/SwitchBlockOn.tx" x="672" y="864"/>
+  <object id="8" template="../ObjectTemplates/SwitchBlockOn.tx" x="1056" y="768"/>
+  <object id="9" template="../ObjectTemplates/SwitchBlockOn.tx" x="1536" y="864"/>
+  <object id="10" template="../ObjectTemplates/SwitchBlockOn.tx" x="1920" y="768"/>
+  <object id="11" template="../ObjectTemplates/SwitchBlockOn.tx" x="2304" y="672"/>
+  <object id="12" template="../ObjectTemplates/SwitchBlockOn.tx" x="2688" y="576"/>
+  <object id="13" template="../ObjectTemplates/SwitchBlockOff.tx" x="192" y="768"/>
+  <object id="15" template="../ObjectTemplates/SwitchBlockOff.tx" x="480" y="864"/>
+  <object id="16" template="../ObjectTemplates/SwitchBlockOff.tx" x="672" y="768"/>
+  <object id="17" template="../ObjectTemplates/SwitchBlockOff.tx" x="864" y="768"/>
+  <object id="18" template="../ObjectTemplates/SwitchBlockOff.tx" x="1056" y="672"/>
+  <object id="19" template="../ObjectTemplates/SwitchBlockOff.tx" x="1248" y="768"/>
+  <object id="20" template="../ObjectTemplates/SwitchBlockOff.tx" x="1536" y="768"/>
+  <object id="21" template="../ObjectTemplates/SwitchBlockOff.tx" x="1728" y="768"/>
+  <object id="22" template="../ObjectTemplates/SwitchBlockOff.tx" x="1920" y="672"/>
+  <object id="23" template="../ObjectTemplates/SwitchBlockOff.tx" x="2112" y="672"/>
+  <object id="24" template="../ObjectTemplates/SwitchBlockOff.tx" x="2304" y="576"/>
+  <object id="25" template="../ObjectTemplates/SwitchBlockOff.tx" x="2688" y="480"/>
+  <object id="26" template="../ObjectTemplates/SwitchBlockOff.tx" x="2880" y="672"/>
+  <object id="27" template="../ObjectTemplates/SwitchBlockOff.tx" x="2784" y="576"/>
+  <object id="28" template="../ObjectTemplates/SwitchBlockOff.tx" x="2976" y="768"/>
+  <object id="14" template="../ObjectTemplates/SwitchBlockOff.tx" x="96" y="672"/>
+  <object id="32" template="../ObjectTemplates/StartBall.tx" x="96" y="768"/>
+  <object id="33" template="../ObjectTemplates/EndBall.tx" x="96" y="384"/>
+ </objectgroup>
+ <objectgroup id="3" name="Collectable">
+  <object id="30" template="../ObjectTemplates/Switch.tx" x="3168" y="768"/>
+ </objectgroup>
+ <layer id="5" name="Decoration" width="35" height="11">
+  <data encoding="csv">
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+ <layer id="4" name="Enemies" width="35" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,37,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+</map>

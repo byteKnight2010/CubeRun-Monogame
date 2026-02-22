@@ -1,0 +1,393 @@
+{
+    "activeFile": "BaseMode/29.tmx",
+    "expandedProjectPaths": [
+        "ObjectTemplates",
+        "."
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "BaseMode/0.tmx": {
+            "scale": 0.5223800505050504,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1583.1385582210407,
+                "y": 576.2088343706571
+            }
+        },
+        "BaseMode/1.tmx": {
+            "expandedObjectLayers": [
+                3
+            ],
+            "scale": 1,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 637,
+                "y": 384
+            }
+        },
+        "BaseMode/10.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1592,
+                "y": 756
+            }
+        },
+        "BaseMode/11.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 721.3333333333335,
+                "y": 722.6666666666665
+            }
+        },
+        "BaseMode/12.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1061.3333333333335,
+                "y": 718.6666666666665
+            }
+        },
+        "BaseMode/13.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1650,
+                "y": 472
+            }
+        },
+        "BaseMode/14.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1744,
+                "y": 856
+            }
+        },
+        "BaseMode/15.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 717.3333333333335,
+                "y": 810.6666666666665
+            }
+        },
+        "BaseMode/16.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1055.9999999999998,
+                "y": 854.6666666666665
+            }
+        },
+        "BaseMode/17.tmx": {
+            "expandedObjectLayers": [
+                2,
+                3,
+                4
+            ],
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1560,
+                "y": 790
+            }
+        },
+        "BaseMode/18.tmx": {
+            "expandedObjectLayers": [
+                2,
+                3,
+                4
+            ],
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1672,
+                "y": 606
+            }
+        },
+        "BaseMode/19.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 897.3333333333335,
+                "y": 885.3333333333334
+            }
+        },
+        "BaseMode/2.tmx": {
+            "scale": 1,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 2843,
+                "y": 384
+            }
+        },
+        "BaseMode/20.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1430,
+                "y": 1076
+            }
+        },
+        "BaseMode/21.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 1572,
+                "y": 474
+            }
+        },
+        "BaseMode/22.tmx": {
+            "scale": 0.4,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1867.5,
+                "y": 352.5
+            }
+        },
+        "BaseMode/23.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 845.3333333333335,
+                "y": 849.3333333333334
+            }
+        },
+        "BaseMode/24.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1576,
+                "y": 767
+            }
+        },
+        "BaseMode/25.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1428,
+                "y": 580
+            }
+        },
+        "BaseMode/26.tmx": {
+            "expandedObjectLayers": [
+                6,
+                5,
+                4
+            ],
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 720,
+                "y": 625
+            }
+        },
+        "BaseMode/27.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 870.6666666666665,
+                "y": 830.6666666666665
+            }
+        },
+        "BaseMode/28.tmx": {
+            "expandedObjectLayers": [
+                6,
+                5,
+                4
+            ],
+            "scale": 0.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1292,
+                "y": 510
+            }
+        },
+        "BaseMode/29.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1665,
+                "y": 574
+            }
+        },
+        "BaseMode/3.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 767,
+                "y": 624
+            }
+        },
+        "BaseMode/30.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1776.5,
+                "y": 816.5
+            }
+        },
+        "BaseMode/31.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1584.5,
+                "y": 864.5
+            }
+        },
+        "BaseMode/32.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1488.5,
+                "y": 720.5
+            }
+        },
+        "BaseMode/33.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1488.5,
+                "y": 672.5
+            }
+        },
+        "BaseMode/34.tmx": {
+            "scale": 0.7743489583333333,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 767.7417185135363,
+                "y": 767.7417185135362
+            }
+        },
+        "BaseMode/35.tmx": {
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 0.462405303030303,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1581.945525291829,
+                "y": 574.171615809953
+            }
+        },
+        "BaseMode/36.tmx": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                6
+            ],
+            "scale": 0.5,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 1637,
+                "y": 1099
+            }
+        },
+        "BaseMode/37.tmx": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                6
+            ],
+            "scale": 0.7743489583333333,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 894.2996468807803,
+                "y": 767.7417185135363
+            }
+        },
+        "BaseMode/38.tmx": {
+            "expandedObjectLayers": [
+                5,
+                4,
+                6
+            ],
+            "scale": 0.6634510869565218,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 1196.0188408765105,
+                "y": 815.4331353676018
+            }
+        },
+        "BaseMode/4.tmx": {
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 726,
+                "y": 576
+            }
+        },
+        "BaseMode/5.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 615,
+                "y": 384
+            }
+        },
+        "BaseMode/6.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 961,
+                "y": 1692
+            }
+        },
+        "BaseMode/7.tmx": {
+            "scale": 1,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 767,
+                "y": 585
+            }
+        },
+        "BaseMode/8.tmx": {
+            "scale": 0.4704761904761905,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1762.0445344129553,
+                "y": 480.36437246963555
+            }
+        },
+        "BaseMode/9.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1556,
+                "y": 334
+            }
+        },
+        "Tilesets/platformerTiles.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 0.65
+        }
+    },
+    "last.objectTemplatePath": "C:/Users/roger/Programming-VS-Code/CSharp/Cube Run C#/Content/Maps/Platformers/ObjectTemplates",
+    "openFiles": [
+        "BaseMode/24.tmx",
+        "BaseMode/29.tmx",
+        "BaseMode/30.tmx",
+        "BaseMode/31.tmx",
+        "BaseMode/32.tmx",
+        "BaseMode/33.tmx",
+        "BaseMode/34.tmx"
+    ],
+    "project": "PlatformersTmx.tiled-project",
+    "property.type": "int",
+    "recentFiles": [
+        "BaseMode/24.tmx",
+        "BaseMode/34.tmx",
+        "BaseMode/33.tmx",
+        "BaseMode/32.tmx",
+        "BaseMode/31.tmx",
+        "BaseMode/30.tmx",
+        "BaseMode/29.tmx",
+        "BaseMode/28.tmx",
+        "BaseMode/25.tmx",
+        "BaseMode/26.tmx",
+        "BaseMode/27.tmx",
+        "BaseMode/0.tmx"
+    ]
+}

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="15" height="13" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="27">
+ <properties>
+  <property name="CanonFiringRate" type="float" value="5.75"/>
+ </properties>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="15" height="13">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,1,1,0,0,1,1,1,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+1,0,0,0,0,0,1,1,1,1,0,1,1,0,0,
+1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,
+0,1,1,1,1,1,1,0,0,0,0,1,1,1,0,
+0,1,1,1,1,1,1,1,1,1,1,0,0,1,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,1,2,1,0,0,0,0,0,1,0,0,0,0,0,
+0,0,0,0,1,1,1,1,1,0,0,1,1,0,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="15" height="13">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,17,17,0,0,0,17,17,0,0,0,17,17,0,0,
+0,0,0,17,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,17,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,17,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,32,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Decoration" width="15" height="13">
+  <data encoding="csv">
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,0,0,1,0,0,0,0,0,0,0,0,0,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,
+0,0,0,0,0,0,0,1,1,1,0,0,0,0,1,
+0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,
+1,0,0,0,0,0,0,1,1,1,1,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,1,0,0,0,0,0,1,1,0,0,1,1
+</data>
+ </layer>
+ <objectgroup id="4" name="Interactable">
+  <object id="15" template="../ObjectTemplates/StartBall.tx" x="192" y="960"/>
+  <object id="17" template="../ObjectTemplates/EndFragmentBall.tx" x="96" y="384"/>
+  <object id="20" template="../ObjectTemplates/TeleportPortalOff.tx" x="192" y="864">
+   <properties>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="21" template="../ObjectTemplates/TeleportLocationOff.tx" x="1152" y="576"/>
+  <object id="24" template="../ObjectTemplates/ChangerBullet.tx" x="864" y="288">
+   <properties>
+    <property name="RateChange" type="float" value="5"/>
+    <property name="SpeedChange" type="int" value="200"/>
+   </properties>
+  </object>
+  <object id="25" template="../ObjectTemplates/EndBallFragment.tx" x="1152" y="288">
+   <properties>
+    <property name="Trim" value="LeftHalf"/>
+   </properties>
+  </object>
+  <object id="26" template="../ObjectTemplates/EndBallFragment.tx" x="384" y="576">
+   <properties>
+    <property name="Trim" value="RightHalf"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="Collectable">
+  <object id="1" template="../ObjectTemplates/LifeBlock.tx" x="1152" y="768"/>
+  <object id="2" template="../ObjectTemplates/Coin.tx" x="1056" y="768"/>
+  <object id="13" template="../ObjectTemplates/Coin.tx" x="576" y="576"/>
+  <object id="14" template="../ObjectTemplates/Coin.tx" x="480" y="576"/>
+  <object id="3" template="../ObjectTemplates/Coin.tx" x="1056" y="864"/>
+  <object id="10" template="../ObjectTemplates/Coin.tx" x="768" y="1152"/>
+  <object id="4" template="../ObjectTemplates/Coin.tx" x="1152" y="864"/>
+  <object id="16" template="../ObjectTemplates/Checkpoint.tx" x="960" y="480"/>
+  <object id="22" template="../ObjectTemplates/Switch.tx" x="1152" y="1152"/>
+ </objectgroup>
+ <objectgroup id="6" name="Interactable Enemies">
+  <object id="5" name="Canon" gid="56" x="960" y="1152" width="96" height="96">
+   <properties>
+    <property name="Floor" type="bool" value="true"/>
+    <property name="Orientation" value="Right"/>
+    <property name="Passthrough" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="12" template="../ObjectTemplates/CanonFloor.tx" x="672" y="576">
+   <properties>
+    <property name="Orientation" value="Left"/>
+   </properties>
+  </object>
+  <object id="7" template="../ObjectTemplates/Canon.tx" x="1248" y="1056"/>
+  <object id="8" template="../ObjectTemplates/Canon.tx" x="1248" y="960"/>
+  <object id="9" template="../ObjectTemplates/Canon.tx" x="1248" y="864"/>
+  <object id="11" template="../ObjectTemplates/DeathCube.tx" x="480" y="1152"/>
+ </objectgroup>
+</map>

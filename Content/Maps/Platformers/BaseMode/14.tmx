@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="37" height="12" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="28">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="37" height="12">
+  <data encoding="csv">
+0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,
+0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,1,0,0,1,1,1,0,
+0,0,1,0,1,0,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,0,0,1,0,1,0,0,0,0,
+0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,
+0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,
+1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,0,1,0,0,0,
+1,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,
+0,1,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,
+0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="2" name="Interactable">
+  <object id="1" template="../ObjectTemplates/EndSwitchBall.tx" x="192" y="864"/>
+  <object id="2" template="../ObjectTemplates/StartBall.tx" x="192" y="576"/>
+  <object id="3" template="../ObjectTemplates/SwitchBlockOff.tx" x="2976" y="384"/>
+  <object id="4" template="../ObjectTemplates/SwitchBlockOff.tx" x="3072" y="384"/>
+  <object id="19" template="../ObjectTemplates/TeleportPortalOn.tx" x="384" y="384"/>
+  <object id="20" template="../ObjectTemplates/TeleportLocationOn.tx" x="2880" y="1056"/>
+ </objectgroup>
+ <objectgroup id="3" name="Collectable">
+  <object id="25" template="../ObjectTemplates/LifeBlock.tx" x="1824" y="192"/>
+  <object id="26" template="../ObjectTemplates/Switch.tx" x="3264" y="288"/>
+  <object id="27" template="../ObjectTemplates/Checkpoint.tx" x="2784" y="288"/>
+ </objectgroup>
+ <layer id="6" name="Decoration" width="37" height="12">
+  <data encoding="csv">
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,1,0,1,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,1,1,1,1,
+1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,1,1,1,
+1,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,
+1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
+1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,1,1,1,1,1
+</data>
+ </layer>
+ <layer id="4" name="Enemies" width="37" height="12">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="5" name="Interactable Enemies">
+  <object id="6" template="../ObjectTemplates/DeadDeathCube.tx" x="2400" y="384"/>
+  <object id="7" template="../ObjectTemplates/DeadDeathCube.tx" x="1824" y="384"/>
+  <object id="8" template="../ObjectTemplates/DeadDeathCube.tx" x="1248" y="384"/>
+  <object id="9" template="../ObjectTemplates/DeadDeathCube.tx" x="576" y="384"/>
+  <object id="10" template="../ObjectTemplates/DeathCube.tx" x="2304" y="1056"/>
+  <object id="11" template="../ObjectTemplates/DeathCube.tx" x="1824" y="1056"/>
+  <object id="12" template="../ObjectTemplates/DeathCube.tx" x="960" y="1056"/>
+  <object id="13" template="../ObjectTemplates/SpikeOff.tx" x="960" y="864">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="14" template="../ObjectTemplates/SpikeOff.tx" x="1632" y="864">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="15" template="../ObjectTemplates/SpikeOff.tx" x="1152" y="192">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="16" template="../ObjectTemplates/SpikeOff.tx" x="1728" y="192">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="17" template="../ObjectTemplates/SpikeOff.tx" x="2304" y="192">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+  <object id="18" template="../ObjectTemplates/SpikeOff.tx" x="2400" y="864">
+   <properties>
+    <property name="Orientation" value="Down"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

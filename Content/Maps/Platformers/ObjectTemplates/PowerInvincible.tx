@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="PowerInvincible" gid="62" width="96" height="96">
+  <properties>
+   <property name="Respawn" type="bool" value="true"/>
+  </properties>
+ </object>
+</template>

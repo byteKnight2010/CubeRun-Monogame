@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="35" height="11" tilewidth="96" tileheight="96" infinite="0" nextlayerid="7" nextobjectid="40">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="35" height="11">
+  <data encoding="csv">
+0,1,1,1,1,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,1,0,0,0,0,0,
+1,0,1,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
+1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,
+1,0,1,0,1,1,0,0,1,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,
+0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="35" height="11">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,17,17,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,17,17,0,0,0,0,0,0,0,0,0,0,17,0,0,0,0,0,17,17,17,0,0,
+0,0,0,37,0,0,0,37,37,37,0,17,0,0,0,37,0,0,37,37,37,0,17,17,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,17,0,0,17,17,0,17,17,0,0,0,17,0,0,0,17,17,17,0,0,0,0,0,0,0,0,0,0,0,0,17,0,
+0,0,0,0,17,17,0,0,0,0,0,0,0,0,0,17,17,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,37,37,37,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,37,37,37,37,0,0,0,0,37,0,0,0,0,0,
+0,0,0,0,0,0,0,0,37,37,37,37,37,37,37,0,0,37,37,37,37,0,0,0,0,0,0,0,0,0,37,37,37,0,0,
+0,0,0,0,37,37,37,37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Decoration" width="35" height="11">
+  <data encoding="csv">
+1,0,0,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,1,
+1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+ </layer>
+ <objectgroup id="4" name="Interactable">
+  <object id="1" name="StartBall" gid="10" x="96" y="768" width="96" height="96"/>
+  <object id="4" name="SwitchBlockOff" gid="11" x="480" y="864" width="96" height="96"/>
+  <object id="5" name="SwitchBlockOff" gid="11" x="672" y="768" width="96" height="96"/>
+  <object id="6" name="SwitchBlockOff" gid="11" x="864" y="768" width="96" height="96"/>
+  <object id="7" name="SwitchBlockOff" gid="11" x="1056" y="672" width="96" height="96"/>
+  <object id="8" name="SwitchBlockOff" gid="11" x="1248" y="768" width="96" height="96"/>
+  <object id="9" name="SwitchBlockOff" gid="11" x="1536" y="768" width="96" height="96"/>
+  <object id="35" name="SwitchBlockOff" gid="11" x="1440" y="768" width="96" height="96"/>
+  <object id="10" name="SwitchBlockOff" gid="11" x="1728" y="768" width="96" height="96"/>
+  <object id="11" name="SwitchBlockOff" gid="11" x="1920" y="672" width="96" height="96"/>
+  <object id="12" name="SwitchBlockOff" gid="11" x="2112" y="672" width="96" height="96"/>
+  <object id="13" name="SwitchBlockOff" gid="11" x="2304" y="576" width="96" height="96"/>
+  <object id="19" name="SwitchBlockOff" gid="11" x="2880" y="672" width="96" height="96"/>
+  <object id="21" name="SwitchBlockOff" gid="11" x="2688" y="480" width="96" height="96"/>
+  <object id="22" name="SwitchBlockOn" gid="12" x="2688" y="576" width="96" height="96"/>
+  <object id="23" name="SwitchBlockOn" gid="12" x="2304" y="672" width="96" height="96"/>
+  <object id="24" name="SwitchBlockOn" gid="12" x="1920" y="768" width="96" height="96"/>
+  <object id="25" name="SwitchBlockOn" gid="12" x="1536" y="864" width="96" height="96"/>
+  <object id="34" name="SwitchBlockOn" gid="12" x="1440" y="864" width="96" height="96"/>
+  <object id="28" name="SwitchBlockOn" gid="12" x="192" y="672" width="96" height="96"/>
+  <object id="29" name="SwitchBlockOn" gid="12" x="192" y="576" width="96" height="96"/>
+  <object id="26" name="SwitchBlockOn" gid="12" x="1056" y="768" width="96" height="96"/>
+  <object id="27" name="SwitchBlockOn" gid="12" x="672" y="864" width="96" height="96"/>
+  <object id="33" name="EndBall" gid="8" x="96" y="384" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="Trim" value="None"/>
+   </properties>
+  </object>
+  <object id="36" name="Teleport Start Location" gid="16" x="96" y="576" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+  <object id="39" name="Teleport Start Location" gid="16" x="1344" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="37" name="Teleport End Location" gid="14" x="1056" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="1"/>
+   </properties>
+  </object>
+  <object id="38" name="Teleport End Location" gid="14" x="2208" y="192" width="96" height="96">
+   <properties>
+    <property name="Active" type="bool" value="true"/>
+    <property name="ID" type="int" value="0"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="Interactable Enemies"/>
+ <objectgroup id="6" name="Collectable">
+  <object id="32" name="Switch" gid="51" x="3168" y="768" width="96" height="96">
+   <properties>
+    <property name="Orientation" value="Up"/>
+   </properties>
+  </object>
+ </objectgroup>
+</map>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="20" height="8" tilewidth="96" tileheight="96" infinite="0" nextlayerid="6" nextobjectid="12">
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <layer id="1" name="Terrain" width="20" height="8">
+  <data encoding="csv">
+0,1,1,1,1,0,1,1,1,0,1,1,1,1,0,0,1,1,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,
+1,0,0,0,0,0,0,0,0,1,0,1,0,0,1,1,0,0,0,1,
+1,0,0,0,1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1,
+0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0
+</data>
+ </layer>
+ <objectgroup id="3" name="Interactable">
+  <object id="3" template="../ObjectTemplates/SwitchBlockOn.tx" x="1056" y="192"/>
+  <object id="4" template="../ObjectTemplates/SwitchBlockOn.tx" x="1056" y="288"/>
+  <object id="5" template="../ObjectTemplates/SwitchBlockOn.tx" x="1056" y="384"/>
+  <object id="10" template="../ObjectTemplates/EndBall.tx" x="1728" y="672"/>
+  <object id="11" template="../ObjectTemplates/StartBall.tx" x="96" y="480"/>
+ </objectgroup>
+ <objectgroup id="4" name="Collectable">
+  <properties>
+   <property name="Orientation" value="Up"/>
+  </properties>
+  <object id="9" template="../ObjectTemplates/Switch.tx" x="96" y="288"/>
+ </objectgroup>
+ <layer id="5" name="Decoration" width="20" height="8">
+  <data encoding="csv">
+1,0,0,0,0,1,0,0,0,1,0,0,0,0,1,1,0,0,1,1,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+1,0,0,0,1,1,1,0,0,0,0,1,0,0,1,1,0,0,0,1
+</data>
+ </layer>
+ <layer id="2" name="Enemies" width="20" height="8">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,17,0,0,0,17,0,0,0,0,17,17,0,0,17,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,37,37,37,37,0,37,37,0,0,37,37,0,0
+</data>
+ </layer>
+</map>

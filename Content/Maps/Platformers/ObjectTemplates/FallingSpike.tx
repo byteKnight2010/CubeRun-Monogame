@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="FallingSpike" gid="45" width="96" height="96">
+  <properties>
+   <property name="Automatic" type="bool" value="false"/>
+   <property name="LimitedRange" type="bool" value="true"/>
+   <property name="Orientation" value="Down"/>
+  </properties>
+ </object>
+</template>

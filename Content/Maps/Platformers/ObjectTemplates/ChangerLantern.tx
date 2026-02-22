@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <tileset firstgid="1" source="../Tilesets/platformerTiles.tsx"/>
+ <object name="Changer" gid="68" width="96" height="96">
+  <properties>
+   <property name="Type" value="Lantern"/>
+   <property name="WidthChange" type="float" value="60"/>
+  </properties>
+ </object>
+</template>
