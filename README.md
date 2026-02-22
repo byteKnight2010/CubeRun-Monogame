@@ -6,6 +6,7 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 ---
 
 The new update has brought tremendous new features:
+
 - The *Camera* system has been optimized with a Matrix to handle screen offset and scale rather than applying to each sprite. 
 - Incorporated Multithreading for the *SaveSystem*, Screenshots, and LevelLoading
 - Outlined *SoundManager* and *Assets* classes into seperate file for convenience
@@ -17,7 +18,9 @@ The new update has brought tremendous new features:
 - Added *BasicSprite* into *Camera* and Mapsystem for lightweight sprites with no: Animations, Rotations, DrawOffsets
 - Added *ExitWindow*, *SaveWindow*, *EndLevelScreen*, *TmxLoadingScreen*, and *TitleScreen* UI elements
 - Added *SoundManager* as an efficient way to cache and handle Sounds, SoundEffects, and Music
+
 And optimizations:
+
 - The *Camera* system has been optimized with a Matrix to handle screen offset and scale rather than applying to each sprite.
 - A global Matrix has been added for other elements independent of the Camera, to avoid scaling each sprite.
 - The *Maps* system has been entirely reworked to use a custom *MapContentPipeline* to process and load TmxMaps.
