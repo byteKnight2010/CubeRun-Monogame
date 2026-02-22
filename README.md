@@ -32,8 +32,8 @@ And optimizations:
   
 ---
 
-## Planned Features (By next Update ideally):
-- Overworld
-- Finish Spring
-- Player powers: Invincibility, Sprinting, Honey, Auto-Move
-- Upgrade the TMX loader for less reliance on LINQ and improve efficiency
+## Planned Features/Fixes (By next Update):
+- Resolve issues in Letterboxing
+- Decide final tile-size, and if smaller: Render to small target and scale-up each draw frame
+- Finalize template-conversion across all TMX maps
+- Add large/small powerups
