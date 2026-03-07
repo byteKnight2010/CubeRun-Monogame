@@ -42,6 +42,34 @@ namespace Cube_Run_C_ {
       public readonly float Volume;
       public readonly float Pitch;
       public readonly float Pan;
+
+
+      /// <summary>
+      /// Constructs SoundData given Audio Effects.
+      /// </summary>
+      /// <param name="volume"> Effect Volume </param>
+      /// <param name="pitch"> Effect Pitch </param>
+      /// <param name="pan"> Effect Pan </param>
+      public SoundData(float volume, float pitch, float pan) {
+        this.Volume = volume;
+        this.Pitch = pitch;
+        this.Pan = pan;
+      }
+
+
+      /// <summary>
+      /// Default data
+      /// </summary>
+      public static readonly SoundData Default = new(1.0f, 0.0f, 0.0f);
+    }
+
+    /// <summary>
+    /// Data accompanying a SoundEffectInstance.
+    /// </summary>
+    public readonly struct SoundInstanceData {
+      public readonly float Volume;
+      public readonly float Pitch;
+      public readonly float Pan;
       public readonly bool Loop;
 
 
@@ -52,7 +80,7 @@ namespace Cube_Run_C_ {
       /// <param name="pitch"> Effect Pitch </param>
       /// <param name="pan"> Effect Pan </param>
       /// <param name="loop"> Loop Effect </param>
-      public SoundData(float volume, float pitch, float pan, bool loop = false) {
+      public SoundInstanceData(float volume, float pitch, float pan, bool loop = false) {
         this.Volume = volume;
         this.Pitch = pitch;
         this.Pan = pan;
@@ -63,7 +91,7 @@ namespace Cube_Run_C_ {
       /// <summary>
       /// Default data
       /// </summary>
-      public static readonly SoundData Default = new(1.0f, 0.0f, 0.0f, false);
+      public static readonly SoundInstanceData Default = new(1.0f, 0.0f, 0.0f, false);
     }
 
 
@@ -154,7 +182,7 @@ namespace Cube_Run_C_ {
       /// </summary>
       /// <param name="path"> SoundEffect file path </param>
       /// <param name="data"> SoundData effects </param>
-      public static void PlaySoundInstance(string path, SoundData data) {
+      public static void PlaySoundInstance(string path, SoundInstanceData data) {
         SoundEffect Sound = GetSound(path, true);
 
         if (Sound == null) 
@@ -369,7 +397,7 @@ namespace Cube_Run_C_ {
       public static readonly SpriteTransform[] DirectionRotations = [new(0f, SpriteEffects.FlipHorizontally, Vector2.One), SpriteTransform.Default, new(-MathHelper.PiOver2, SpriteEffects.None, Vector2.One), new(MathHelper.PiOver2, SpriteEffects.FlipVertically, Vector2.One)];
       public static GraphicsDevice GraphicsDevice;
       public static ContentManager Content;
-      public static Effect BrightnessEffect = null;
+      private static Effect GlobalShader = null;
       public static SpriteFont FallbackFont;
       private static Texture2D MissingTexture = null;
       public static TmxMap CurrentMap;
@@ -398,7 +426,7 @@ namespace Cube_Run_C_ {
         SetupFonts();
 
         try {
-          BrightnessEffect = Content.Load<Effect>(Paths.EffectPath);
+          GlobalShader = Content.Load<Effect>(Paths.EffectPath);
         } catch (ContentLoadException) {
           throw new Exception("[CRITICAL ERROR]: Failed to load Brightness Effect.");
         }
@@ -427,21 +455,21 @@ namespace Cube_Run_C_ {
       /// <param name="gameType"> Sub-Game Type </param>
       public static void SetupAnimations(GameType gameType) {
         if (gameType == GameType.Platformer) {
-          AnimationsData[(int)Animations.FallingSpikeRegrow] = new(GetTexture("Animations/Spikes/FallingSpikeGrow"), TILE_VECTOR, 7, 250.0f, false, true);
+          AnimationsData[(int)Animations.FallingSpikeRegrow] = new(GetTexture("Animations/Spikes/FallingSpikeGrow"), IMAGE_VECTOR, 7, 250.0f, false, true);
 
-          AnimationsData[(int)Animations.PlayerDefault] = new(GetTexture("Images/PlayerImages/Player"), TILE_VECTOR, 1, 0f, false, false);
-          AnimationsData[(int)Animations.PlayerTeleport] = new(GetTexture("Animations/Player/PlayerTeleport"), TILE_VECTOR, 12, 150f, false, false);
-          AnimationsData[(int)Animations.PlayerTeleportGold] = new(GetTexture("Animations/Player/PlayerTeleportGold"), TILE_VECTOR, 12, 150f, false, false);
-          AnimationsData[(int)Animations.PlayerTeleportHoney] = new(GetTexture("Animations/Player/PlayerTeleportHoney"), TILE_VECTOR, 12, 150f, false, false);
+          AnimationsData[(int)Animations.PlayerDefault] = new(GetTexture("Images/PlayerImages/Player"), IMAGE_VECTOR, 1, 0f, false, false);
+          AnimationsData[(int)Animations.PlayerTeleport] = new(GetTexture("Animations/Player/PlayerTeleport"), IMAGE_VECTOR, 12, 150f, false, false);
+          AnimationsData[(int)Animations.PlayerTeleportGold] = new(GetTexture("Animations/Player/PlayerTeleportGold"), IMAGE_VECTOR, 12, 150f, false, false);
+          AnimationsData[(int)Animations.PlayerTeleportHoney] = new(GetTexture("Animations/Player/PlayerTeleportHoney"), IMAGE_VECTOR, 12, 150f, false, false);
 
-          AnimationsData[(int)Animations.SpringRetraction] = new(GetTexture("Animations/Interactable/Spring"), TILE_VECTOR, 10, 100.0f, false, true);
-          AnimationsData[(int)Animations.Quicksand] = new(GetTexture("Animations/Interactable/Quicksand"), TILE_VECTOR, 4, 200.0f, false, true);
-          AnimationsData[(int)Animations.QuicksandDeep] = new(GetTexture("Animations/Interactable/QuicksandDeep"), TILE_VECTOR, 17, 500, true, false);
+          AnimationsData[(int)Animations.SpringRetraction] = new(GetTexture("Animations/Interactable/Spring"), IMAGE_VECTOR, 10, 100.0f, false, true);
+          AnimationsData[(int)Animations.Quicksand] = new(GetTexture("Animations/Interactable/Quicksand"), IMAGE_VECTOR, 4, 200.0f, false, true);
+          AnimationsData[(int)Animations.QuicksandDeep] = new(GetTexture("Animations/Interactable/QuicksandDeep"), IMAGE_VECTOR, 17, 500, true, false);
 
-          AnimationsData[(int)Animations.Coin] = new(GetTexture("Animations/Collectable/Coin"), TILE_VECTOR, 9, 144.0f, true, false);
+          AnimationsData[(int)Animations.Coin] = new(GetTexture("Animations/Collectable/Coin"), IMAGE_VECTOR, 9, 144.0f, true, false);
         } else if (gameType == GameType.PlatformerUI) {
           AnimationsData[(int)Animations.UIAButton] = new(GetTexture("Animations/UIAnimations/Input/ButtonA"), TILE_VECTOR, 2, 150f, true, true);
-          AnimationsData[(int)Animations.SaveDisk] = new(GetTexture("Images/UIImages/SaveDisk"), new(TILE_SIZE, TILE_SIZE), 10, 1000f, false, false);
+          AnimationsData[(int)Animations.SaveDisk] = new(GetTexture("Images/UIImages/SaveDisk"), TILE_VECTOR, 10, 1000f, false, false);
           AnimationsData[(int)Animations.ScreenshotSave] = new();
         }
       }
@@ -530,6 +558,12 @@ namespace Cube_Run_C_ {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
       public static string NormalizePath(string path) => path.Replace('\\', '/').ToLowerInvariant();
 
+      
+      /// <summary>
+      /// Getter for GlobalShader
+      /// </summary>
+      public static Effect Shader => GlobalShader;
+
 
       /// <summary>
       /// Unload specific Texture.
@@ -556,5 +590,4 @@ namespace Cube_Run_C_ {
       }
     }
   }
-
 }

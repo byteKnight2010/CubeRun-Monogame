@@ -13,16 +13,6 @@ namespace Cube_Run_C_ {
   }
 
 
-  public class GameConfig {
-    public GraphicsConfig Graphics = new();
-    public UIConfig UI = new();
-    public GameplayConfig Gameplay = new();
-    public SpatialConstants Spatial = new();
-    public AudioConfig Audio = new();
-    public PathsConfig Paths = new();
-    public TimeConfig Times = new();
-  }
-
   public readonly struct BinHeader {
     public readonly long Offset;
     public readonly int Hash;
@@ -54,136 +44,126 @@ namespace Cube_Run_C_ {
   }
 
   
-
-  public class GraphicsConfig {
-    public Dimensions DefaultDimensions = new(1280, 720);
-    public int MinimumWidth = 160;
-    public int MinimumHeight = 90;
-    public ushort TargetFPS = 144;
-    public ushort MinFPS = 30;
-    public ushort MaxFPS = 360;
-    public float ScreenRatio = 4f / 3f;
-    public float BrightnessMax = 2.0f;
-    public float GhostAlpha = 0.4f;
-  }
-
-  public class UIConfig {
-    public float LoadingDotInterval = 0.25f;
-  }
-
-  
-  public class GameplayConfig {
-    public PlayerConfig Player = new();
-
-    public byte TileSize = 96;
-    public byte CellSize = 192;
-    public byte AnimationSpeed = 6;
-    public float RadianFactor = 0.017453292f;
-    public float Hundredth = 0.01f;
-    
-    public byte GoalFragmentMax = 4;
-    public ushort DefaultEnemySpeed = 90;
-    public ushort DefaultBulletSpeed = 150;
-    public ushort DefaultFallingSpikeSpeed = 250;
-    public ushort DefaultFallingSpikeRegrow = 5000;
-    public float DefaultCanonFiringRate = 5.0f;
-    public float DefaultLanternWidth = 90.0f;
-
-    public float QuicksandDrag = 15f;
-    public float QuicksandDeepDrag = 20f;
-  }
-  
-  public class PlayerConfig {
-    public float TerminalVelocity = 900.0f;
-    public float WallJumpDirectionFactor = 1.5f;
-    public float QuicksandSpeedFactor = 0.1f;
-    public float QuicksandDeepSpeedFactor = 0.075555f;
-    public float QuicksandJumpFactor = 0.5f;
-    public float SpringEffect = 1125f;
-    public float AlternativeSpringEffect = 1237.5f;
-    public ushort Gravity = 800;
-    public ushort JumpHeight = 600;
-    public ushort Speed = 450;
-    public byte PowerBitOffset = 23;
-    public byte PowerBitEnd = 30;
-    public byte ContactBitOffset = 8;
-  }
-
-
-  public class SpatialConstants {
-    public byte MAX_Z_LAYERS = 8;
-    public byte SPRITE_GROUP_QUERY_THRESHOLD = 100;
-    public byte DEFAULT_CELL_CAPACITY = 4;
-    public byte CELL_LIST_POOL_SIZE = 100;
-    public byte BUCKET_SIZE_PIXELS = 96;
-
-  }
-  
-
-  public class Bestiary {
-    public Dictionary<string, BestiaryEntry> Entries = new() {
-      ["Brick"] = new("brk", "descer"),
-      ["Start Orb"] = BestiaryEntry.Default,
-      ["End Orb"] = BestiaryEntry.Default,
-      ["Start Tile"] = BestiaryEntry.Default,
-      ["Spike"] = BestiaryEntry.Default,
-      ["Teleport Portal"] = BestiaryEntry.Default,
-      ["Life Block"] = BestiaryEntry.Default,
-    };
-  }
-
-  public readonly struct BestiaryEntry {
-    public readonly string ID;
-    public readonly string Description;
-
-
-    public BestiaryEntry(string id, string description) {
-      this.ID = id;
-      this.Description = description;
+  public static class ConfigManager {
+    public class GameConfig {
+      public GraphicsConfig Graphics = new();
+      public UIConfig UI = new();
+      public GameplayConfig Gameplay = new();
+      public SpatialConstants Spatial = new();
+      public AudioConfig Audio = new();
+      public CameraConfig Camera = new();
+      public PathsConfig Paths = new();
+      public TimeConfig Times = new();
     }
 
 
-    public static readonly BestiaryEntry Default = new("[Empty]", "[Empty]");
-  }
+    public class GraphicsConfig {
+      public Dimensions DefaultDimensions = new(1280, 720);
+      public int MinimumWidth = 160;
+      public int MinimumHeight = 90;
+      public ushort TargetFPS = 144;
+      public ushort MinFPS = 30;
+      public ushort MaxFPS = 360;
+      public byte BaseImageSize = 96;
+      public float BaseScaleFactor = 3f;
+      public float ScreenRatio = 16f / 9f;
+      public float BrightnessMax = 2.0f;
+      public float GhostAlpha = 0.4f;
+    }
+
+    public class UIConfig {
+      public float LoadingDotInterval = 0.25f;
+    }
+
+    
+    public class GameplayConfig {
+      public PlayerConfig Player = new();
+
+      public byte TileSize = 96;
+      public byte CellSize = 192;
+      public byte AnimationSpeed = 6;
+      public float RadianFactor = 0.017453292f;
+      public float Hundredth = 0.01f;
+      
+      public byte GoalFragmentMax = 4;
+      public ushort DefaultEnemySpeed = 90;
+      public ushort DefaultBulletSpeed = 150;
+      public ushort DefaultFallingSpikeSpeed = 250;
+      public ushort DefaultFallingSpikeRegrow = 5000;
+      public float DefaultCanonFiringRate = 5.0f;
+      public float DefaultLanternWidth = 90.0f;
+
+      public float QuicksandDrag = 15f;
+      public float QuicksandDeepDrag = 20f;
+    }
+    
+    public class PlayerConfig {
+      public float TerminalVelocity = 900.0f;
+      public float WallJumpDirectionFactor = 1.5f;
+      public float QuicksandSpeedFactor = 0.1f;
+      public float QuicksandDeepSpeedFactor = 0.075555f;
+      public float QuicksandJumpFactor = 0.5f;
+      public float SpringEffect = 1125f;
+      public float AlternativeSpringEffect = 1237.5f;
+      public ushort Gravity = 800;
+      public ushort JumpHeight = 600;
+      public ushort Speed = 450;
+      public byte PowerBitOffset = 23;
+      public byte PowerBitEnd = 30;
+      public byte ContactBitOffset = 8;
+    }
+
+
+    public class SpatialConstants {
+      public byte MAX_Z_LAYERS = 8;
+      public byte SPRITE_GROUP_QUERY_THRESHOLD = 100;
+      public byte DEFAULT_CELL_CAPACITY = 4;
+      public byte CELL_LIST_POOL_SIZE = 100;
+      public byte BUCKET_SIZE_PIXELS = 96;
+
+    }
   
-
-  public class Credits {
-    public string Art = "Jaden Perez";
-    public string Music = "Jaden Perez";
-    public string Story = "Roger Ramirez";
-    public string Code = "Roger Ramirez";
-    public string LevelDesign = "Roger Ramirez";
-  }
-
-
-  public class AudioConfig {
-    public float DefaultMasterVolume = 1.0f;
-    public float DefaultSFXVolume = 1.0f;
-    public float DefaultMusicVolume = 1.0f;
-    public float AudioMax = 1.0f;
-  }
-  
-
-  public class PathsConfig {
-    public string FallbackFontPath = "Fonts/Fallback";
-    public string FallbackTexturePath = "Images/FallbackTexture";
-    public string EffectPath = "Effects/Brightness";
-  }
-  
-  public class TimeConfig {
-    public double[] TimeWarnings = [60, 180, 300];
-  }
+    
+    public class Credits {
+      public string Art = "Jaden Perez";
+      public string Music = "Jaden Perez";
+      public string Story = "Roger Ramirez";
+      public string Code = "Roger Ramirez";
+      public string LevelDesign = "Roger Ramirez";
+    }
 
 
+    public class AudioConfig {
+      public float DefaultMasterVolume = 1.0f;
+      public float DefaultSFXVolume = 1.0f;
+      public float DefaultMusicVolume = 1.0f;
+      public float AudioMax = 1.0f;
+    }
+    
+    public class CameraConfig {
+      public ushort MaxExpectedSprites = 200;
+    }
 
-  public static class ConfigManager {
+
+    public class PathsConfig {
+      public string FallbackFontPath = "Fonts/Fallback";
+      public string FallbackTexturePath = "Images/FallbackTexture";
+      public string EffectPath = "Effects/Shaders";
+    }
+    
+    public class TimeConfig {
+      public double[] TimeWarnings = [60, 180, 300];
+    }
+
+
+
     public static readonly string SaveDirectory = GetConfigPath();
     private static readonly string ConfigJSONName = Path.Combine(SaveDirectory, "GameConfig.json");
     private static readonly string ConfigFileName = Path.Combine(SaveDirectory, "GameConfig.bin");
     private static readonly string CreditJSONName = Path.Combine(SaveDirectory, "Credits.json");
     private static FileStream Stream;
-    public static GameConfig Current { get; private set; } = new();
-    public static Credits Credits { get; private set; } = new();
+    private static GameConfig Current { get; set; } = new();
+    public static Credits GameCredits { get; private set; } = new();
     private const int CONFIG_MAGIC = 0x4958456C;
     private const int CONFIG_VERSION = 1;
 
@@ -229,57 +209,60 @@ namespace Cube_Run_C_ {
           return;
         }
 
-        Current.Graphics.DefaultDimensions = new(Reader.ReadInt32(), Reader.ReadInt32());
-        Current.Graphics.MinimumWidth = Reader.ReadInt32();
-        Current.Graphics.MinimumHeight = Reader.ReadInt32();
-        Current.Graphics.TargetFPS = Reader.ReadUInt16();
-        Current.Graphics.MinFPS = Reader.ReadUInt16();
-        Current.Graphics.MaxFPS = Reader.ReadUInt16();
-        Current.Graphics.ScreenRatio = Reader.ReadSingle();
-        Current.Graphics.BrightnessMax = Reader.ReadSingle();
-        Current.Graphics.GhostAlpha = Reader.ReadSingle();
-        Current.UI.LoadingDotInterval = Reader.ReadSingle();
-        Current.Gameplay.Player.TerminalVelocity = Reader.ReadSingle();
-        Current.Gameplay.Player.WallJumpDirectionFactor = Reader.ReadSingle();
-        Current.Gameplay.Player.QuicksandSpeedFactor = Reader.ReadSingle();
-        Current.Gameplay.Player.QuicksandDeepSpeedFactor = Reader.ReadSingle();
-        Current.Gameplay.Player.QuicksandJumpFactor = Reader.ReadSingle();
-        Current.Gameplay.Player.SpringEffect = Reader.ReadSingle();
-        Current.Gameplay.Player.AlternativeSpringEffect = Reader.ReadSingle();
-        Current.Gameplay.Player.Gravity = Reader.ReadUInt16();
-        Current.Gameplay.Player.JumpHeight = Reader.ReadUInt16();
-        Current.Gameplay.Player.Speed = Reader.ReadUInt16();
-        Current.Gameplay.Player.PowerBitOffset = Reader.ReadByte();
-        Current.Gameplay.Player.ContactBitOffset = Reader.ReadByte();
-        Current.Gameplay.TileSize = Reader.ReadByte();
-        Current.Gameplay.CellSize = Reader.ReadByte();
-        Current.Gameplay.AnimationSpeed = Reader.ReadByte();
-        Current.Gameplay.RadianFactor = Reader.ReadSingle();
-        Current.Gameplay.Hundredth = Reader.ReadSingle();
-        Current.Gameplay.GoalFragmentMax = Reader.ReadByte();
-        Current.Gameplay.DefaultEnemySpeed = Reader.ReadUInt16();
-        Current.Gameplay.DefaultBulletSpeed = Reader.ReadUInt16();
-        Current.Gameplay.DefaultFallingSpikeSpeed = Reader.ReadUInt16();
-        Current.Gameplay.DefaultFallingSpikeRegrow = Reader.ReadUInt16();
-        Current.Gameplay.DefaultCanonFiringRate = Reader.ReadSingle();
-        Current.Gameplay.DefaultLanternWidth = Reader.ReadSingle();
-        Current.Gameplay.QuicksandDrag = Reader.ReadSingle();
-        Current.Gameplay.QuicksandDeepDrag = Reader.ReadSingle();
-        Current.Spatial.MAX_Z_LAYERS = Reader.ReadByte();
-        Current.Spatial.SPRITE_GROUP_QUERY_THRESHOLD = Reader.ReadByte();
-        Current.Spatial.DEFAULT_CELL_CAPACITY = Reader.ReadByte();
-        Current.Spatial.CELL_LIST_POOL_SIZE = Reader.ReadByte();
-        Current.Spatial.BUCKET_SIZE_PIXELS = Reader.ReadByte();
-        Current.Audio.DefaultMasterVolume = Reader.ReadSingle();
-        Current.Audio.DefaultSFXVolume = Reader.ReadSingle();
-        Current.Audio.DefaultMusicVolume = Reader.ReadSingle();
-        Current.Audio.AudioMax = Reader.ReadSingle();
-        Current.Paths.FallbackFontPath = Reader.ReadString();
-        Current.Paths.FallbackTexturePath = Reader.ReadString();
-        Current.Paths.EffectPath = Reader.ReadString();
-        Current.Times.TimeWarnings[0] = Reader.ReadDouble();
-        Current.Times.TimeWarnings[1] = Reader.ReadDouble();
-        Current.Times.TimeWarnings[2] = Reader.ReadDouble();
+        Graphics.DefaultDimensions = new(Reader.ReadInt32(), Reader.ReadInt32());
+        Graphics.MinimumWidth = Reader.ReadInt32();
+        Graphics.MinimumHeight = Reader.ReadInt32();
+        Graphics.TargetFPS = Reader.ReadUInt16();
+        Graphics.MinFPS = Reader.ReadUInt16();
+        Graphics.MaxFPS = Reader.ReadUInt16();
+        Graphics.BaseImageSize = Reader.ReadByte();
+        Graphics.BaseScaleFactor = Reader.ReadSingle();
+        Graphics.ScreenRatio = Reader.ReadSingle();
+        Graphics.BrightnessMax = Reader.ReadSingle();
+        Graphics.GhostAlpha = Reader.ReadSingle();
+        UI.LoadingDotInterval = Reader.ReadSingle();
+        Gameplay.Player.TerminalVelocity = Reader.ReadSingle();
+        Gameplay.Player.WallJumpDirectionFactor = Reader.ReadSingle();
+        Gameplay.Player.QuicksandSpeedFactor = Reader.ReadSingle();
+        Gameplay.Player.QuicksandDeepSpeedFactor = Reader.ReadSingle();
+        Gameplay.Player.QuicksandJumpFactor = Reader.ReadSingle();
+        Gameplay.Player.SpringEffect = Reader.ReadSingle();
+        Gameplay.Player.AlternativeSpringEffect = Reader.ReadSingle();
+        Gameplay.Player.Gravity = Reader.ReadUInt16();
+        Gameplay.Player.JumpHeight = Reader.ReadUInt16();
+        Gameplay.Player.Speed = Reader.ReadUInt16();
+        Gameplay.Player.PowerBitOffset = Reader.ReadByte();
+        Gameplay.Player.ContactBitOffset = Reader.ReadByte();
+        Gameplay.TileSize = Reader.ReadByte();
+        Gameplay.CellSize = Reader.ReadByte();
+        Gameplay.AnimationSpeed = Reader.ReadByte();
+        Gameplay.RadianFactor = Reader.ReadSingle();
+        Gameplay.Hundredth = Reader.ReadSingle();
+        Gameplay.GoalFragmentMax = Reader.ReadByte();
+        Gameplay.DefaultEnemySpeed = Reader.ReadUInt16();
+        Gameplay.DefaultBulletSpeed = Reader.ReadUInt16();
+        Gameplay.DefaultFallingSpikeSpeed = Reader.ReadUInt16();
+        Gameplay.DefaultFallingSpikeRegrow = Reader.ReadUInt16();
+        Gameplay.DefaultCanonFiringRate = Reader.ReadSingle();
+        Gameplay.DefaultLanternWidth = Reader.ReadSingle();
+        Gameplay.QuicksandDrag = Reader.ReadSingle();
+        Gameplay.QuicksandDeepDrag = Reader.ReadSingle();
+        Spatial.MAX_Z_LAYERS = Reader.ReadByte();
+        Spatial.SPRITE_GROUP_QUERY_THRESHOLD = Reader.ReadByte();
+        Spatial.DEFAULT_CELL_CAPACITY = Reader.ReadByte();
+        Spatial.CELL_LIST_POOL_SIZE = Reader.ReadByte();
+        Spatial.BUCKET_SIZE_PIXELS = Reader.ReadByte();
+        Audio.DefaultMasterVolume = Reader.ReadSingle();
+        Audio.DefaultSFXVolume = Reader.ReadSingle();
+        Audio.DefaultMusicVolume = Reader.ReadSingle();
+        Audio.AudioMax = Reader.ReadSingle();
+        Camera.MaxExpectedSprites = Reader.ReadUInt16();
+        Paths.FallbackFontPath = Reader.ReadString();
+        Paths.FallbackTexturePath = Reader.ReadString();
+        Paths.EffectPath = Reader.ReadString();
+        Times.TimeWarnings[0] = Reader.ReadDouble();
+        Times.TimeWarnings[1] = Reader.ReadDouble();
+        Times.TimeWarnings[2] = Reader.ReadDouble();
 
         CloseStream();
       } catch (Exception Exception) {
@@ -291,7 +274,7 @@ namespace Cube_Run_C_ {
       try {
         if (File.Exists(CreditJSONName)) {
           string Json = File.ReadAllText(CreditJSONName);
-          Credits = JsonConvert.DeserializeObject<Credits>(Json) ?? new();
+          GameCredits = JsonConvert.DeserializeObject<Credits>(Json) ?? new();
         } else {
           Console.WriteLine($"[ERROR]: Failed to load Credit JSON. File does not exist.");
         }
@@ -323,58 +306,61 @@ namespace Cube_Run_C_ {
         Writer.Write(CONFIG_MAGIC);
         Writer.Write(CONFIG_VERSION);
         
-        Writer.Write(Current.Graphics.DefaultDimensions.Width);
-        Writer.Write(Current.Graphics.DefaultDimensions.Height);
-        Writer.Write(Current.Graphics.MinimumWidth);
-        Writer.Write(Current.Graphics.MinimumHeight);
-        Writer.Write(Current.Graphics.TargetFPS);
-        Writer.Write(Current.Graphics.MinFPS);
-        Writer.Write(Current.Graphics.MaxFPS);
-        Writer.Write(Current.Graphics.ScreenRatio);
-        Writer.Write(Current.Graphics.BrightnessMax);
-        Writer.Write(Current.Graphics.GhostAlpha);
-        Writer.Write(Current.UI.LoadingDotInterval);
-        Writer.Write(Current.Gameplay.Player.TerminalVelocity);
-        Writer.Write(Current.Gameplay.Player.WallJumpDirectionFactor);
-        Writer.Write(Current.Gameplay.Player.QuicksandSpeedFactor);
-        Writer.Write(Current.Gameplay.Player.QuicksandDeepSpeedFactor);
-        Writer.Write(Current.Gameplay.Player.QuicksandJumpFactor);
-        Writer.Write(Current.Gameplay.Player.SpringEffect);
-        Writer.Write(Current.Gameplay.Player.AlternativeSpringEffect);
-        Writer.Write(Current.Gameplay.Player.Gravity);
-        Writer.Write(Current.Gameplay.Player.JumpHeight);
-        Writer.Write(Current.Gameplay.Player.Speed);
-        Writer.Write(Current.Gameplay.Player.PowerBitOffset);
-        Writer.Write(Current.Gameplay.Player.ContactBitOffset);
-        Writer.Write(Current.Gameplay.TileSize);
-        Writer.Write(Current.Gameplay.CellSize);
-        Writer.Write(Current.Gameplay.AnimationSpeed);
-        Writer.Write(Current.Gameplay.RadianFactor);
-        Writer.Write(Current.Gameplay.Hundredth);
-        Writer.Write(Current.Gameplay.GoalFragmentMax);
-        Writer.Write(Current.Gameplay.DefaultEnemySpeed);
-        Writer.Write(Current.Gameplay.DefaultBulletSpeed);
-        Writer.Write(Current.Gameplay.DefaultFallingSpikeSpeed);
-        Writer.Write(Current.Gameplay.DefaultFallingSpikeRegrow);
-        Writer.Write(Current.Gameplay.DefaultCanonFiringRate);
-        Writer.Write(Current.Gameplay.DefaultLanternWidth);
-        Writer.Write(Current.Gameplay.QuicksandDrag);
-        Writer.Write(Current.Gameplay.QuicksandDeepDrag);
-        Writer.Write(Current.Spatial.MAX_Z_LAYERS);
-        Writer.Write(Current.Spatial.SPRITE_GROUP_QUERY_THRESHOLD);
-        Writer.Write(Current.Spatial.DEFAULT_CELL_CAPACITY);
-        Writer.Write(Current.Spatial.CELL_LIST_POOL_SIZE);
-        Writer.Write(Current.Spatial.BUCKET_SIZE_PIXELS);
-        Writer.Write(Current.Audio.DefaultMasterVolume);
-        Writer.Write(Current.Audio.DefaultSFXVolume);
-        Writer.Write(Current.Audio.DefaultMusicVolume);
-        Writer.Write(Current.Audio.AudioMax);
-        Writer.Write(Current.Paths.FallbackFontPath);
-        Writer.Write(Current.Paths.FallbackTexturePath);
-        Writer.Write(Current.Paths.EffectPath);
-        Writer.Write(Current.Times.TimeWarnings[0]);
-        Writer.Write(Current.Times.TimeWarnings[1]);
-        Writer.Write(Current.Times.TimeWarnings[2]);
+        Writer.Write(Graphics.DefaultDimensions.Width);
+        Writer.Write(Graphics.DefaultDimensions.Height);
+        Writer.Write(Graphics.MinimumWidth);
+        Writer.Write(Graphics.MinimumHeight);
+        Writer.Write(Graphics.TargetFPS);
+        Writer.Write(Graphics.MinFPS);
+        Writer.Write(Graphics.MaxFPS);
+        Writer.Write(Graphics.BaseImageSize);
+        Writer.Write(Graphics.BaseScaleFactor);
+        Writer.Write(Graphics.ScreenRatio);
+        Writer.Write(Graphics.BrightnessMax);
+        Writer.Write(Graphics.GhostAlpha);
+        Writer.Write(UI.LoadingDotInterval);
+        Writer.Write(Gameplay.Player.TerminalVelocity);
+        Writer.Write(Gameplay.Player.WallJumpDirectionFactor);
+        Writer.Write(Gameplay.Player.QuicksandSpeedFactor);
+        Writer.Write(Gameplay.Player.QuicksandDeepSpeedFactor);
+        Writer.Write(Gameplay.Player.QuicksandJumpFactor);
+        Writer.Write(Gameplay.Player.SpringEffect);
+        Writer.Write(Gameplay.Player.AlternativeSpringEffect);
+        Writer.Write(Gameplay.Player.Gravity);
+        Writer.Write(Gameplay.Player.JumpHeight);
+        Writer.Write(Gameplay.Player.Speed);
+        Writer.Write(Gameplay.Player.PowerBitOffset);
+        Writer.Write(Gameplay.Player.ContactBitOffset);
+        Writer.Write(Gameplay.TileSize);
+        Writer.Write(Gameplay.CellSize);
+        Writer.Write(Gameplay.AnimationSpeed);
+        Writer.Write(Gameplay.RadianFactor);
+        Writer.Write(Gameplay.Hundredth);
+        Writer.Write(Gameplay.GoalFragmentMax);
+        Writer.Write(Gameplay.DefaultEnemySpeed);
+        Writer.Write(Gameplay.DefaultBulletSpeed);
+        Writer.Write(Gameplay.DefaultFallingSpikeSpeed);
+        Writer.Write(Gameplay.DefaultFallingSpikeRegrow);
+        Writer.Write(Gameplay.DefaultCanonFiringRate);
+        Writer.Write(Gameplay.DefaultLanternWidth);
+        Writer.Write(Gameplay.QuicksandDrag);
+        Writer.Write(Gameplay.QuicksandDeepDrag);
+        Writer.Write(Spatial.MAX_Z_LAYERS);
+        Writer.Write(Spatial.SPRITE_GROUP_QUERY_THRESHOLD);
+        Writer.Write(Spatial.DEFAULT_CELL_CAPACITY);
+        Writer.Write(Spatial.CELL_LIST_POOL_SIZE);
+        Writer.Write(Spatial.BUCKET_SIZE_PIXELS);
+        Writer.Write(Audio.DefaultMasterVolume);
+        Writer.Write(Audio.DefaultSFXVolume);
+        Writer.Write(Audio.DefaultMusicVolume);
+        Writer.Write(Audio.AudioMax);
+        Writer.Write(Camera.MaxExpectedSprites);
+        Writer.Write(Paths.FallbackFontPath);
+        Writer.Write(Paths.FallbackTexturePath);
+        Writer.Write(Paths.EffectPath);
+        Writer.Write(Times.TimeWarnings[0]);
+        Writer.Write(Times.TimeWarnings[1]);
+        Writer.Write(Times.TimeWarnings[2]);
 
         CloseStream();
       } catch (Exception Exception) {
@@ -398,6 +384,7 @@ namespace Cube_Run_C_ {
     public static PlayerConfig Player => Current.Gameplay.Player;
     public static SpatialConstants Spatial => Current.Spatial;
     public static AudioConfig Audio => Current.Audio;
+    public static CameraConfig Camera => Current.Camera;
     public static PathsConfig Paths => Current.Paths;
     public static TimeConfig Times => Current.Times;
 
@@ -432,14 +419,40 @@ namespace Cube_Run_C_ {
     }
   }
 
-
   public static class BestiaryManager {
+    public readonly struct BestiaryEntry {
+      public readonly string ID;
+      public readonly string Description;
+
+
+      public BestiaryEntry(string id, string description) {
+        this.ID = id;
+        this.Description = description;
+      }
+
+
+      public static readonly BestiaryEntry Default = new("[Empty]", "[Empty]");
+    }
+
+    public class Bestiary {
+      public Dictionary<string, BestiaryEntry> Entries = new() {
+        ["Brick"] = new("brk", "descer"),
+        ["Start Orb"] = BestiaryEntry.Default,
+        ["End Orb"] = BestiaryEntry.Default,
+        ["Start Tile"] = BestiaryEntry.Default,
+        ["Spike"] = BestiaryEntry.Default,
+        ["Teleport Portal"] = BestiaryEntry.Default,
+        ["Life Block"] = BestiaryEntry.Default,
+      };
+    }
+
+
     private static readonly string BestiaryFileName = Path.Combine(ConfigManager.SaveDirectory, "Bestiary.bin");
     private static readonly string BestiaryJSONName = Path.Combine(ConfigManager.SaveDirectory, "Bestiary.json");
     public static Dictionary<string, BinDictHeader> BestiaryIndex = new();
     public static FileStream ReadStream;
     public static BinaryReader Reader;
-    public static Bestiary Bestiary = new();
+    public static Bestiary Dictionary = new();
     private const int BESTIARY_MAGIC = 0x6978654C;
     private const int BESTIARY_VERSION = 1;
     private const int INDEX_START_POSITION = sizeof(int) + sizeof(int) + sizeof(int);
@@ -507,7 +520,7 @@ namespace Cube_Run_C_ {
 
     public static void SaveBestiary() {
       try {
-        File.WriteAllText(BestiaryJSONName, JsonConvert.SerializeObject(Bestiary, Formatting.Indented));
+        File.WriteAllText(BestiaryJSONName, JsonConvert.SerializeObject(Dictionary, Formatting.Indented));
       } catch (Exception Exception) {
         Console.WriteLine($"[ERROR]: Failed to save Bestiary JSON - {Exception.Message}");
       }
@@ -610,5 +623,15 @@ namespace Cube_Run_C_ {
       ReadStream = null;
       Reader = null;
     }
+  }
+
+  public static class CutsceneManager {
+    public class Event {
+      public float StartTime;
+      public float Duration;
+      public Action Command;
+    }
+
+    
   }
 }

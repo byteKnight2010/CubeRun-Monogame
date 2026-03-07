@@ -4,8 +4,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using static Cube_Run_C_.ConfigManager;
 using static Cube_Run_C_.Globals;
-using static Cube_Run_C_.Globals.PlayerData;
+using static Cube_Run_C_.PlatformerPlayer;
 using static Cube_Run_C_.Sprites;
 using PointF = System.Drawing.PointF;
 using RectangleF = System.Drawing.RectangleF;
@@ -14,128 +15,212 @@ using RectangleF = System.Drawing.RectangleF;
 namespace Cube_Run_C_ {
   public static class Tools {
     public enum MouseButton : byte {
-      Left,
-      Right,
-      Middle
+      Left = 0,
+      Right = 1,
+      Middle = 2
     }
 
 
-    public struct TileLayerProperty {
-      public List<Groups> Groups;
-      public ZLayers Z;
+    /// <summary>
+    /// Defines rendering and grouping metadata for a tile layer.
+    /// </summary>
+    public readonly struct TileLayerProperty {
+      /// <summary>
+      /// The sprite groups this tile layer is associated with.
+      /// </summary>
+      public readonly List<Groups> Groups;
+      /// <summary>
+      /// The Z-layer depth used for render ordering.
+      /// </summary>
+      public readonly ZLayers Z;
 
-
+      /// <summary>
+      /// Creates a tile layer property with a specified Z-layer and group collection.
+      /// </summary>
+      /// <param name="z"> The rendering depth layer. </param>
+      /// <param name="groups"> The sprite groups assigned to this layer. </param>
       public TileLayerProperty(ZLayers z, List<Groups> groups) {
         this.Z = z;
         this.Groups = groups;
       }
     }
 
-    public struct BVector {
+    /// <summary>
+    /// Compact 2D vector using signed bytes for memory-efficient directional storage.
+    /// </summary>
+    public record struct BVector {
+      /// <summary>
+      /// Horizontal component (-128 to 127).
+      /// </summary>
       public sbyte X;
+      /// <summary>
+      /// Vertical component (-128 to 127).
+      /// </summary>
       public sbyte Y;
 
 
+      /// <summary>
+      /// Creates a new byte-based vector.
+      /// </summary>
       public BVector(sbyte x, sbyte y) {
         this.X = x;
         this.Y = y;
       }
 
 
+      /// <summary>
+      /// Gets the Euclidean length of the vector.
+      /// </summary>
       public readonly float Length => MathF.Sqrt(this.X * this.X + this.Y * this.Y);
 
-      public void Normalize() {
-        float Len = Length;
 
-        if (Len == 0) {
-          this.X = 0;
-          this.Y = 0;
-        }
-
-        this.X = (sbyte)Math.Clamp((int)(this.X / Len * sbyte.MaxValue), sbyte.MinValue, sbyte.MaxValue);
-        this.Y = (sbyte)Math.Clamp((int)(this.Y / Len * sbyte.MaxValue), sbyte.MinValue, sbyte.MaxValue);
-      }
-
-      public readonly bool Equals(Vector2 other) {
-        if (X == other.X)
-          return Y == other.Y;
-
-        return false;
-      }
-
-      public override readonly bool Equals(object obj) {
-        if (obj is Vector2 vector)
-          return Equals(vector);
-
-        return false;
-      }
-
-
-      public override readonly int GetHashCode() => HashCode.Combine(this.X, this.Y);
-
-
-      public static bool operator ==(BVector vectorA, BVector vectorB) => vectorA.Equals(vectorB);
-      public static bool operator !=(BVector vectorA, BVector vectorB) => !vectorB.Equals(vectorB);
-
-
+      /// <summary>
+      /// A zero vector (0, 0).
+      /// </summary>
       public static readonly BVector Zero = new(0, 0);
     }
 
-    public struct GridPosition {
+    /// <summary>
+    /// Creates a new grid position.
+    /// </summary>
+    public struct GridPosition : IEquatable<GridPosition> {
+      /// <summary>
+      /// Horizontal grid coordinate.
+      /// </summary>
       public ushort X;
+      /// <summary>
+      /// Vertical grid coordinate.
+      /// </summary>
       public ushort Y;
 
 
-      public GridPosition(ushort x, ushort y) {
-        this.X = x;
-        this.Y = y;
+      /// <summary>
+      /// Creates a new grid position.
+      /// </summary>
+      public GridPosition(ushort x, ushort y) { 
+        this.X = x; 
+        this.Y = y; 
       }
 
 
+      /// <summary>
+      /// Compares two Grid Positions to check for equality. 
+      /// </summary>
+      /// <param name="other"> Grid to Compare </param>
+      /// <returns> True if equivalent Grid Positions. False if Grid Positions differ. </returns>
+      public readonly bool Equals(GridPosition other) => this.X == other.X && this.Y == other.Y;
+      /// <summary>
+      /// Compares Grid Position to Object for equality. 
+      /// </summary>
+      /// <param name="obj"> Object to Compare </param>
+      /// <returns> True if equivalent Grid Positions. False if Grid Positions differ. </returns>
+      public override readonly bool Equals(object obj) => obj is GridPosition Grid && Equals(Grid);
+      /// <summary>
+      /// Returns the hash code for this Grid Position.
+      /// </summary>
+      /// <returns> A 32-bit signed integer hash code. </returns>
+      public override readonly int GetHashCode() => (X << 16) | Y;
+
+
+      /// <summary>
+      /// The origin grid position (0, 0).
+      /// </summary>
       public static readonly GridPosition Zero = new(0, 0);
     }
 
+    /// <summary>
+    /// Represents integer width and height dimensions.
+    /// </summary>
     public struct Dimensions {
+      /// <summary>
+      /// Width in pixels or units.
+      /// </summary>
       public int Width;
+      /// <summary>
+      /// Height in pixels or units.
+      /// </summary>
       public int Height;
 
 
+      /// <summary>
+      /// Creates a new dimensions structure.
+      /// </summary>
       public Dimensions(int w, int h) {
         this.Width = w;
         this.Height = h;
       }
 
-
+        
+      /// <summary>
+      /// Halves the current dimensions in-place.
+      /// </summary>
       public void Halve() {
         this.Width >>= 1;
         this.Height >>= 1;
-      }
+    }
 
-      public Dimensions Half() => new(this.Width >> 1, this.Height >> 1);
+      /// <summary>
+      /// Returns a new Dimensions instance representing half the current size.
+      /// </summary>
+      public readonly Dimensions Half() => new(this.Width >> 1, this.Height >> 1);
 
 
+      /// <summary>
+      /// Zero dimensions (0, 0).
+      /// </summary>
       public static readonly Dimensions Zero = new(0, 0);
     }
 
+    /// <summary>
+    /// Represents floating-point width and height dimensions.
+    /// </summary>
     public struct DimensionsF {
+      /// <summary>
+      /// Width component.
+      /// </summary>
       public float Width;
+      /// <summary>
+      /// Height component.
+      /// </summary>
       public float Height;
 
 
+      /// <summary>
+      /// Creates a floating-point dimensions structure.
+      /// </summary>
       public DimensionsF(float w, float h) {
         this.Width = w;
         this.Height = h;
       }
 
 
+      /// <summary>
+      /// Zero floating-point dimensions (0f, 0f).
+      /// </summary>
       public static readonly DimensionsF Zero = new(0f, 0f);
     }
 
-    public struct DisplayText {
+    /// <summary>
+    /// Represents text to be rendered on screen with position and color data.
+    /// </summary>
+    public record struct DisplayText {
+      /// <summary>
+      /// Screen-space position of the text.
+      /// </summary>
       public Vector2 Position;
+      /// <summary>
+      /// Color tint applied to the text.
+      /// </summary>
       public Color Color;
+      /// <summary>
+      /// The string content to display.
+      /// </summary>
       public string Text;
 
+
+      /// <summary>
+      /// Creates a display text instance.
+      /// </summary>
       public DisplayText(string text, Vector2 position, Color color) {
         this.Position = position;
         this.Color = color;
@@ -143,20 +228,38 @@ namespace Cube_Run_C_ {
       }
 
 
-      public static readonly DisplayText Empty = new("", Vector2.Zero, Color.White);
+      /// <summary>
+      /// An empty display text instance.
+      /// </summary>
+      public static readonly DisplayText Empty = new(string.Empty, Vector2.Zero, Color.White);
     }
 
+    /// <summary>
+    /// Represents a 2D circle defined by a center point and radius.
+    /// </summary>
     public struct Circle {
+      /// <summary>
+      /// Center point of the circle.
+      /// </summary>
       public Vector2 Center;
+      /// <summary>
+      /// Radius of the circle.
+      /// </summary>
       public float Radius;
 
 
+      /// <summary>
+      /// Creates a circle with a specified center and radius.
+      /// </summary>
       public Circle(Vector2 center, float radius) {
         this.Center = center;
         this.Radius = radius;
       }
 
 
+      /// <summary>
+      /// A zero-radius circle at the origin.
+      /// </summary>
       public static readonly Circle Zero = new(Vector2.Zero, 0f);
     }
 
@@ -298,13 +401,13 @@ namespace Cube_Run_C_ {
 
     public static class GameConverter {
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static Point PointToTile(Vector2 position) => new((int)position.X / TILE_SIZE, (int)position.Y / TILE_SIZE);
+      public static Point PointToTile(Vector2 position) => new((int)position.X / Gameplay.TileSize, (int)position.Y / Gameplay.TileSize);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static Vector2 TileToPoint(Point tilePos) => new(tilePos.X * TILE_SIZE, tilePos.Y * TILE_SIZE);
+      public static Vector2 TileToPoint(Point tilePos) => new(tilePos.X * Gameplay.TileSize, tilePos.Y * Gameplay.TileSize);
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static GridPosition PointToCell(Vector2 point) => new((ushort)Math.Max(0, (int)(point.X / CELL_SIZE)), (ushort)Math.Max(0, (int)(point.Y / CELL_SIZE)));
+      public static GridPosition PointToCell(Vector2 point) => new((ushort)Math.Max(0, (int)(point.X / Gameplay.CellSize)), (ushort)Math.Max(0, (int)(point.Y / Gameplay.CellSize)));
     }
 
     public static class Engine {
@@ -367,19 +470,21 @@ namespace Cube_Run_C_ {
       public static Directions CollisionDirection(Sprite sprite, Sprite target, Directions check) {
         RectangleF MainRect = sprite.Rect;
         RectangleF MainOldRect = sprite.OldRect;
+        RectangleF TargetRect = target.Rect;
+        RectangleF TargetOldRect = target.OldRect;
 
         if (check == Directions.Horizontal || check == Directions.All) {
-          if (MainOldRect.X > MainRect.X) 
-            return Directions.Left;  
-          if (MainOldRect.X < MainRect.X) 
-            return Directions.Right; 
+          if (MainRect.X <= TargetRect.Right && MainOldRect.X >= TargetOldRect.Right)
+            return Directions.Left;
+          if (TargetRect.X <= MainRect.Right && TargetOldRect.X >= MainOldRect.Right)
+            return Directions.Right;
         }
-        
+
         if (check == Directions.Vertical || check == Directions.All) {
-          if (MainOldRect.Y > MainRect.Y) 
-            return Directions.Up;   
-          if (MainOldRect.Y < MainRect.Y) 
-            return Directions.Down;  
+          if (MainRect.Y <= TargetRect.Bottom && MainOldRect.Y >= TargetOldRect.Bottom)
+            return Directions.Up;
+          if (MainRect.Bottom >= TargetRect.Y && MainOldRect.Bottom <= TargetOldRect.Y)
+            return Directions.Down;
         }
 
         return Directions.None;
@@ -435,7 +540,7 @@ namespace Cube_Run_C_ {
 
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
-      public static float ToRadians(float degrees) => degrees * RADIAN_FACTOR;
+      public static float ToRadians(float degrees) => degrees * Gameplay.RadianFactor;
 
 
       public static void HandleCollision(MovingSprite sprite, Sprite obstacle, Directions check) {
@@ -461,6 +566,10 @@ namespace Cube_Run_C_ {
     }
 
     public static class BitMask {
+      // =========================================================
+      //  DEBUG / ENGINE
+      // =========================================================
+
       [Flags]
       public enum DebugInfo : uint {
         FPS = 1 << 0,
@@ -470,22 +579,135 @@ namespace Cube_Run_C_ {
         DeltaTime = 1 << 4
       }
 
-
       [Flags]
       public enum GlobalFlags : ushort {
         Paused = 1 << 0,
         Fullscreen = 1 << 1,
         MouseSpriteVisible = 1 << 2,
-        LetterBoxMode = 1 << 3,
-        EnableMouse = 1 << 4,
-        DisableMouse = 1 << 5,
-        DisplayMouse = 1 << 6,
-        UpdateLantern = 1 << 7,
-        Exit = 1 << 8
+        EnableMouse = 1 << 3,
+        DisableMouse = 1 << 4,
+        DisplayMouse = 1 << 5,
+        UpdateLantern = 1 << 6,
+        Exit = 1 << 7,
+        ForceExit = 1 << 8
+      }
+
+      // =========================================================
+      //  CAMERA
+      // =========================================================
+
+      [Flags]
+      public enum CameraFlags : byte {
+        UpdateSort = 1 << 0,
+        UpdateScreenRect = 1 << 1,
+        LockedPosition = 1 << 2,
+        Zoomed = 1 << 3
+      }
+
+      // =========================================================
+      //  SCREENS / STATES
+      // =========================================================
+
+      [Flags]
+      public enum TitleScreenFlags : byte {
+        Active = 1 << 0,
+        Play = 1 << 1,
+        Settings = 1 << 2,
+        Credits = 1 << 3
       }
 
       [Flags]
-      public enum TimeWarnFlags : byte {
+      public enum TmxLoadScreenFlags : byte {
+        Active = 1 << 0,
+        Loading = 1 << 1,
+        Finished = 1 << 2
+      }
+
+      [Flags]
+      public enum PlatformerLevelFlags : byte {
+        Active = 1 << 0,
+        Transitioning = 1 << 1
+      }
+
+      [Flags]
+      public enum PlatformerEndFlags : uint {
+        Displaying = 1 << 0,
+        HoveringDeaths = 1 << 1,
+        HoveringCoins = 1 << 2,
+        HoveringLifeBlocks = 1 << 3,
+        CanAdvance = 1 << 4
+      }
+
+      // =========================================================
+      //  UI
+      // =========================================================
+
+      [Flags]
+      public enum MenuFlags : uint {
+        Active = 1 << 14,
+        None = 1 << 15,
+
+        // Sections
+        Display = 1 << 8,
+        Audio = 1 << 9,
+        Controls = 1 << 10,
+
+        // Actions
+        UpdateScreen = 1 << 0,
+        UpdateBrightness = 1 << 1,
+        UpdateFPS = 1 << 2,
+        Fullscreen = 1 << 3,
+        UpdateVolume = 1 << 4,
+        UpdateSFX = 1 << 5,
+        UpdateMusic = 1 << 6,
+        Mute = 1 << 7,
+
+        Back = 1 << 11,
+        Quit = 1 << 12,
+        DraggingSlider = 1 << 13
+      }
+
+      [Flags]
+      public enum SaveWindowFlags : byte {
+        Active = 1 << 0,
+        SaveLevel = 1 << 1,
+        SaveSettings = 1 << 2,
+        Advance = 1 << 3
+      }
+
+      [Flags]
+      public enum ExitWindowFlags : byte {
+        Active = 1 << 0,
+        ConfirmedExit = 1 << 1,
+        DisableMouse = 1 << 2
+      }
+
+      [Flags]
+      public enum ButtonFlags : byte {
+        Selected = 1 << 0,
+        Clicking = 1 << 1
+      }
+
+      [Flags]
+      public enum SliderFlags : byte {
+        Dragging = 1 << 0,
+        Selected = 1 << 1
+      }
+
+      // =========================================================
+      //  PLAYER
+      // =========================================================
+
+      [Flags]
+      public enum PlayerDisplayFlags : byte {
+        Active = 1 << 0,
+        DisplayHearts = 1 << 1,
+        DisplayCoins = 1 << 2,
+        DisplayKeyCoins = 1 << 3
+      }
+
+      [Flags]
+      public enum TimeWarningFlags : byte {
         TimeWarning = 1 << 0,
         FirstWarning = 1 << 1,
         SecondWarning = 1 << 2,
@@ -495,101 +717,12 @@ namespace Cube_Run_C_ {
         WindowWarning = 1 << 6
       }
 
+      // =========================================================
+      //  OBJECTS / GAMEPLAY
+      // =========================================================
 
       [Flags]
-      public enum LevelStatFlags : byte {
-        Active = 1 << 0,
-        Transitioning = 1 << 1
-      }
-
-
-      [Flags]
-      public enum CameraStats : byte {
-        UpdateSort = 1 << 0,
-        UpdateScreenRect = 1 << 1,
-        LockedPosition = 1 << 2,
-        Zoomed = 1 << 3
-      }
-
-
-      [Flags]
-      public enum TmxLoadScreenStats : byte {
-        Active = 1 << 0,
-        Loading = 1 << 1,
-        Finished = 1 << 2
-      }
-
-
-
-      [Flags]
-      public enum TitleScreenStats : byte {
-        Active = 1 << 0,
-        Play = 1 << 1,
-        Settings = 1 << 2,
-        Credits = 1 << 3
-      }
-
-      [Flags]
-      public enum MenuStatus : uint {
-        UpdateScreen = 1 << 0,
-        UpdateBrightness = 1 << 1,
-        UpdateFPS = 1 << 2,
-        Fullscreen = 1 << 3,
-        UpdateVolume = 1 << 4,
-        UpdateSFX = 1 << 5,
-        UpdateMusic = 1 << 6,
-        Mute = 1 << 7,
-        Display = 1 << 8,
-        Audio = 1 << 9,
-        Controls = 1 << 10,
-        Back = 1 << 11,
-        Quit = 1 << 12,
-        DraggingSlider = 1 << 13,
-        Active = 1 << 14,
-        LetterBox = 1 << 15,
-        None = 1 << 16,
-      }
-
-      [Flags]
-      public enum SaveWindowStats : byte {
-        Active = 1 << 0,
-        SaveLevel = 1 << 1,
-        SaveSettings = 1 << 2,
-        Advance = 1 << 3
-      }
-
-      [Flags]
-      public enum ExitWindowStats: byte {
-        Active = 1 << 0,
-        ConfirmedExit = 1 << 1,
-        DisableMouse = 1 << 2
-      }
-
-
-      [Flags]
-      public enum EndLevelScreenStats : uint {
-        Displaying = 1 << 0,
-        HoveringDeaths = 1 << 1,
-        HoveringCoins = 1 << 2,
-        HoveringLifeBlocks = 1 << 3,
-        CanAdvance = 1 << 4,
-      }
-
-      [Flags]
-      public enum SliderFlags : byte {
-        Dragging = 1 << 0,
-        Selected = 1 << 1
-      }
-
-      [Flags]
-      public enum ButtonFlags : byte {
-        Selected = 1 << 0,
-        Clicking = 1 << 1
-      }
-
-
-      [Flags]
-      public enum ObjectStats : ushort {
+      public enum ObjectFlags : ushort {
         Active = 1 << 0,
         Multi = 1 << 1,
         Floor = 1 << 2,
@@ -601,26 +734,6 @@ namespace Cube_Run_C_ {
         Respawn = 1 << 8
       }
 
-
-      [Flags]
-      public enum AnimationFlags : byte {
-        Playing = 1 << 0,
-        Reset = 1 << 1,
-        Loop = 1 << 2,
-      }
-
-      [Flags]
-      public enum SpriteEffectFlags : byte {
-        Ghost = 1 << 0
-      }
-
-      [Flags]
-      public enum SpriteGroupProperties : byte {
-        SpritesMoved = 1 << 0,
-        UseQuery = 1 << 1,
-        GridDirty = 1 << 2
-      }
-
       [Flags]
       public enum FallingSpikeFlags : byte {
         Regrow = 1 << 0,
@@ -629,9 +742,17 @@ namespace Cube_Run_C_ {
         Regrowing = 1 << 3,
         Falling = 1 << 4,
         Unbranched = 1 << 5,
-        Destroyed = 1 << 6,
+        Destroyed = 1 << 6
       }
-      
+
+      [Flags]
+      public enum SpringFlags : byte {
+        Active = 1 << 0,
+        Horizontal = 1 << 1,
+        Multi = 1 << 2,
+        Retracting = 1 << 3
+      }
+
       [Flags]
       public enum BulletFlags : byte {
         Passthrough = 1 << 0,
@@ -639,18 +760,10 @@ namespace Cube_Run_C_ {
       }
 
       [Flags]
-      public enum PowerSpriteFlags {
+      public enum PowerSpriteFlags : byte {
         Destroyed = 1 << 0,
         Respawn = 1 << 1,
         Canceller = 1 << 2
-      }
-
-      [Flags]
-      public enum SpringFlags {
-        Active = 1 << 0,
-        Horizontal = 1 << 1,
-        Multi = 1 << 2,
-        Retracting = 1 << 3
       }
 
       [Flags]
@@ -661,6 +774,32 @@ namespace Cube_Run_C_ {
         Down = 1 << 7
       }
 
+      // =========================================================
+      //  RENDERING / ANIMATION
+      // =========================================================
+
+      [Flags]
+      public enum AnimationFlags : byte {
+        Playing = 1 << 0,
+        Reset = 1 << 1,
+        Loop = 1 << 2
+      }
+
+      [Flags]
+      public enum SpriteEffectFlags : byte {
+        Ghost = 1 << 0
+      }
+
+      [Flags]
+      public enum SpriteGroupFlags : byte {
+        SpritesMoved = 1 << 0,
+        UseQuery = 1 << 1,
+        GridDirty = 1 << 2
+      }
+
+      // =========================================================
+      //  GENERIC BIT OPERATIONS
+      // =========================================================
 
 
       [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -799,6 +938,31 @@ namespace Cube_Run_C_ {
   }
 
 
+  public static class EffectExtensions {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetVariable(this Effect effect, string name, Vector3 value) => effect.Parameters[name].SetValue(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetVariable(this Effect effect, string name, Vector2 value) => effect.Parameters[name].SetValue(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetVariable(this Effect effect, string name, float value) => effect.Parameters[name].SetValue(value);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void SetVariable(this Effect effect, string name, bool value) => effect.Parameters[name].SetValue(value);
+  }
+
+  public static class Texture2DExtensions {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static RectangleF GetRectangleF(this Texture2D texture, Vector2 position) => new(position.X, position.Y, texture.Width, texture.Height);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Rectangle GetRectangle(this Texture2D texture, Vector2 position) => new((int)position.X, (int)position.Y, texture.Width, texture.Height);
+    
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Tools.Dimensions GetDimensions(this Texture2D texture) => new(texture.Width, texture.Height);
+  }
+
   public static class ViewportExtensions {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 ToVector2(this Viewport viewport) => new(viewport.X, viewport.Y);
@@ -865,24 +1029,13 @@ namespace Cube_Run_C_ {
     }
   }
 
-  public static class Texture2DExtensions {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static RectangleF GetRectangleF(this Texture2D texture, Vector2 position) => new(position.X, position.Y, texture.Width, texture.Height);
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Rectangle GetRectangle(this Texture2D texture, Vector2 position) => new((int)position.X, (int)position.Y, texture.Width, texture.Height);
-    
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Tools.Dimensions GetDimensions(this Texture2D texture) => new(texture.Width, texture.Height);
-  }
-
   public static class Vector2Extensions {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static PointF ToPointF(this Vector2 vector) => new(vector.X, vector.Y);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Tools.Dimensions ToDimensions(this Vector2 vector) => new((int)vector.X, (int)vector.Y);
-
+    
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 FastNormalize(in Vector2 vector) {

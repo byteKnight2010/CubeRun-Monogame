@@ -1,7 +1,7 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Content;
 using static Cube_Run_C_.Globals;
+using static Cube_Run_C_.PlatformerPlayer;
 using static Cube_Run_C_.Sprites;
 using static Cube_Run_C_.Tools.BitMask;
 using static Cube_Run_C_.Tools.Engine;
@@ -17,6 +17,7 @@ namespace Cube_Run_C_ {
     public int Height;
     public int TileWidth;
     public int TileHeight;
+    public int SpriteCount;
   }
 
   public class TmxTileset {
@@ -58,7 +59,7 @@ namespace Cube_Run_C_ {
 
     public Directions Orientation = Directions.Right;
     public Fragment Trim = Fragment.None;
-    public PlayerData.PlayerPowers Power = PlayerData.PlayerPowers.None;
+    public PlayerPowers Power = PlayerPowers.None;
     public uint DurationChange = 0;
     public int ID = -1;
     public ushort SpeedChange = 0;
@@ -113,6 +114,8 @@ namespace Cube_Run_C_ {
         input.ReadSingle(),
         input.ReadSingle()
       );
+
+      Map.SpriteCount = input.ReadInt32();
 
       return Map;
     }
@@ -206,7 +209,7 @@ namespace Cube_Run_C_ {
         Object.Gid = input.ReadInt32();
 
       int PropCount = input.ReadInt32();
-      Set(ref Object.Stats, (byte)ObjectStats.Active, true);
+      Set(ref Object.Stats, (byte)ObjectFlags.Active, true);
 
       for (int Index = 0; Index < PropCount; Index++) {
         Key = input.ReadString();
@@ -222,34 +225,34 @@ namespace Cube_Run_C_ {
             Object.Power = StringToPower(Value);
             break;
           case "Active":
-            Set(ref Object.Stats, (ushort)ObjectStats.Active, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Active, bool.Parse(Value));
             break;
           case "ID":
             Object.ID = int.Parse(Value);
             break;
           case "Multi":
-            Set(ref Object.Stats, (ushort)ObjectStats.Multi, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Multi, bool.Parse(Value));
             break;
           case "Floor":
-            Set(ref Object.Stats, (ushort)ObjectStats.Floor, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Floor, bool.Parse(Value));
             break;
           case "Passthrough":
-            Set(ref Object.Stats, (ushort)ObjectStats.Passthrough, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Passthrough, bool.Parse(Value));
             break;
           case "Horizontal":
-            Set(ref Object.Stats, (ushort)ObjectStats.Horizontal, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Horizontal, bool.Parse(Value));
             break;
           case "Automatic":
-            Set(ref Object.Stats, (ushort)ObjectStats.Automatic, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Automatic, bool.Parse(Value));
             break;
           case "LimitedRange":
-            Set(ref Object.Stats, (ushort)ObjectStats.LimitedRange, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.LimitedRange, bool.Parse(Value));
             break;
           case "Deep":
-            Set(ref Object.Stats, (ushort)ObjectStats.Deep, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Deep, bool.Parse(Value));
             break;
           case "Respawn":
-            Set(ref Object.Stats, (ushort)ObjectStats.Respawn, bool.Parse(Value));
+            Set(ref Object.Stats, (ushort)ObjectFlags.Respawn, bool.Parse(Value));
             break;
           case "RateChange":
           case "WidthChange":

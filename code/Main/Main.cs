@@ -4,9 +4,11 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using static Cube_Run_C_.Assets;
 using static Cube_Run_C_.Assets.SoundManager;
+using static Cube_Run_C_.Assets.VisualManager;
 using static Cube_Run_C_.ConfigManager;
 using static Cube_Run_C_.Debugger;
 using static Cube_Run_C_.Globals;
+using static Cube_Run_C_.PlatformerPlayer;
 using static Cube_Run_C_.Sprites;
 using static Cube_Run_C_.Tools;
 using static Cube_Run_C_.Tools.BitMask;
@@ -54,8 +56,6 @@ namespace Cube_Run_C_ {
       Camera.Graphics = this.Graphics;
       MonitorDimensions = new(this.GraphicsDevice.Adapter.CurrentDisplayMode.Width, this.GraphicsDevice.Adapter.CurrentDisplayMode.Height);
 
-      Camera.Reset(Color.Teal);
-
       this.IsFixedTimeStep = true;
       this.TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / (long)Fps);
 
@@ -64,8 +64,8 @@ namespace Cube_Run_C_ {
 
     protected override void LoadContent() {
       this.SpriteBatch = new SpriteBatch(this.GraphicsDevice);
-      this.SceneRenderTarget = new(this.GraphicsDevice, this.GraphicsDevice.Viewport.Width, this.GraphicsDevice.Viewport.Height);
-      this.ScreenTarget = new(this.GraphicsDevice, this.GraphicsDevice.Viewport.Width, this.GraphicsDevice.Viewport.Height, false, SurfaceFormat.Color, DepthFormat.None);
+      this.SceneRenderTarget = new(this.GraphicsDevice, DEFAULT_DIMENSIONS.Width, DEFAULT_DIMENSIONS.Height);
+      this.ScreenTarget = new(this.GraphicsDevice, DEFAULT_DIMENSIONS.Width, DEFAULT_DIMENSIONS.Height, false, SurfaceFormat.Color, DepthFormat.None);
       this.MouseSprite = new(this.Content.Load<Texture2D>("Images/UIImages/MainMouse"), Vector2.Zero);
 
       VisualManager.Content = this.Content;
@@ -76,39 +76,40 @@ namespace Cube_Run_C_ {
     }
 
     private void Start() {
-      VisualManager.BrightnessEffect.Parameters["InnerColor"].SetValue(new Vector3(1.0f, 0.784f, 0.165f));
-      VisualManager.BrightnessEffect.Parameters["MiddleColor"].SetValue(new Vector3(1.0f, 0.863f, 0.322f));
-      VisualManager.BrightnessEffect.Parameters["OuterColor"].SetValue(new Vector3(0.969f, 0.914f, 0.592f));
-      VisualManager.BrightnessEffect.Parameters["FarColor"].SetValue(new Vector3(1.0f, 0.957f, 0.788f));
-      VisualManager.BrightnessEffect.Parameters["BeyondColor"].SetValue(new Vector3(1.0f, 1.0f, 1.0f));
-      VisualManager.BrightnessEffect.Parameters["ScreenSize"].SetValue(new Vector2(this.GraphicsDevice.Viewport.Width, this.GraphicsDevice.Viewport.Height));
-      VisualManager.BrightnessEffect.Parameters["InnerRadius"].SetValue(LanternLightWidth);
-      VisualManager.BrightnessEffect.Parameters["MiddleRadius"].SetValue(LanternLightWidth * 1.25f);
-      VisualManager.BrightnessEffect.Parameters["OuterRadius"].SetValue(LanternLightWidth * 2.0f);
-      VisualManager.BrightnessEffect.Parameters["FarRadius"].SetValue(LanternLightWidth * 2.5f);
-      VisualManager.BrightnessEffect.Parameters["InnerBrightness"].SetValue(1.0f);
-      VisualManager.BrightnessEffect.Parameters["MiddleBrightness"].SetValue(0.6f);
-      VisualManager.BrightnessEffect.Parameters["OuterBrightness"].SetValue(0.02f);
-      VisualManager.BrightnessEffect.Parameters["FarBrightness"].SetValue(0.002f);
-      VisualManager.BrightnessEffect.Parameters["BeyondBrightness"].SetValue(0.0f);
-      VisualManager.BrightnessEffect.Parameters["PixelSize"].SetValue(5.25f);
-      VisualManager.BrightnessEffect.Parameters["Brightness"].SetValue(1.0f);
-      VisualManager.BrightnessEffect.Parameters["LanternEnabled"].SetValue(false);
+      Shader.SetVariable("InnerColor", new Vector3(1.0f, 0.784f, 0.165f));
+      Shader.SetVariable("MiddleColor", new Vector3(1.0f, 0.863f, 0.322f));
+      Shader.SetVariable("OuterColor", new Vector3(0.969f, 0.914f, 0.592f));
+      Shader.SetVariable("FarColor", new Vector3(1.0f, 0.957f, 0.788f));
+      Shader.SetVariable("BeyondColor", new Vector3(1.0f, 1.0f, 1.0f));
+      Shader.SetVariable("ScreenSize", new Vector2(this.GraphicsDevice.Viewport.Width, this.GraphicsDevice.Viewport.Height));
+      Shader.SetVariable("InnerRadius", LanternLightWidth);
+      Shader.SetVariable("MiddleRadius", LanternLightWidth * 1.25f);
+      Shader.SetVariable("OuterRadius", LanternLightWidth * 2.0f);
+      Shader.SetVariable("FarRadius", LanternLightWidth * 2.5f);
+      Shader.SetVariable("InnerBrightness", 1.0f);
+      Shader.SetVariable("MiddleBrightness", 0.6f);
+      Shader.SetVariable("OuterBrightness", 0.02f);
+      Shader.SetVariable("FarBrightness", 0.002f);
+      Shader.SetVariable("BeyondBrightness", 0.0f);
+      Shader.SetVariable("PixelSize", 5.25f);
+      Shader.SetVariable("Brightness", 1.0f);
+      Shader.SetVariable("LanternEnabled", false);
 
-      PauseMenu.Initialize(Menus.Audio);
-      PauseMenu.Initialize(Menus.Display);
-      PauseMenu.Initialize(Menus.Main);
+      SaveSystem.LoadSettings();
+
+      PauseMenu.Initialize();
       FocusOverlay.Initialize();
       SaveWindow.Initialize();
       ExitWindow.Initialize();
-
-      SaveSystem.LoadSettings();
       
       this.UpdatePauseStats(true);
       Set(ref GlobalStats, (ushort)GlobalFlags.MouseSpriteVisible, false);
       this.UpdatePauseStats(false);
 
       TitleScreen.Initialize();
+
+      this.Resize(ConfigManager.Graphics.DefaultDimensions);
+
       TitleScreen.Display();
     }
 
@@ -165,7 +166,7 @@ namespace Cube_Run_C_ {
     }
 
     protected override void OnExiting(object sender, ExitingEventArgs args) {
-      if (!IsSet(TitleScreen.Stats, (byte)TitleScreenStats.Active) && !IsSet(ExitWindow.Stats, (byte)ExitWindowStats.ConfirmedExit)) {
+      if (!IsSet(GlobalStats, (ushort)GlobalFlags.ForceExit) && !IsSet(TitleScreen.Stats, (byte)TitleScreenFlags.Active) && !IsSet(ExitWindow.Stats, (byte)ExitWindowFlags.ConfirmedExit)) {
         args.Cancel = true;
         ExitWindow.Display(); 
         return;
@@ -177,7 +178,7 @@ namespace Cube_Run_C_ {
 
     private void Pause(bool pause) {
       Set(ref GlobalStats, (ushort)GlobalFlags.Paused, pause);
-      Set(ref PauseMenu.Stats, (ushort)MenuStatus.Active, pause);
+      Set(ref PauseMenu.Stats, (ushort)MenuFlags.Active, pause);
 
       this.EnableMouse(pause);
     }
@@ -187,8 +188,9 @@ namespace Cube_Run_C_ {
       Camera.UpdateScale();
       SaveWindow.UpdateScale();
       PauseMenu.UpdateScale();
-      EndLevelScreen.UpdateScale();
+      PlatformerEndScreen.UpdateScale();
       FocusOverlay.UpdateScale();
+      PlayerDisplay.UpdateScaleFactor();
       
       Set(ref GlobalStats, (ushort)GlobalFlags.UpdateLantern, true);
     }
@@ -198,78 +200,73 @@ namespace Cube_Run_C_ {
         PauseMenu.Update();
 
 
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Quit)) {
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Quit, false);
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Quit)) {
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Quit, false);
           Exit();
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Back)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Back)) {
           if (PauseMenu.CurrentMenu == Menus.Main) {
             SaveSystem.SaveSettings();
             Pause(false);
             FillColor = Camera.BackgroundColor;
           } else {
-            PauseMenu.Initialize(Menus.Main);
+            PauseMenu.InitializeMenu(Menus.Main);
           }
 
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Back, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Back, false);
         }
 
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateBrightness)) {
-          VisualManager.BrightnessEffect.Parameters["Brightness"].SetValue(PauseMenu.SelectedValues[(int)Menus.Display].Y);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateBrightness, false);
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateBrightness)) {
+          Shader.SetVariable("Brightness", PauseMenu.SelectedValues[(int)Menus.Display].Y);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateBrightness, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateFPS)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateFPS)) {
           Fps = (ushort)PauseMenu.SelectedValues[(int)Menus.Display].Z;
           this.TargetElapsedTime = TimeSpan.FromTicks(TimeSpan.TicksPerSecond / (long)Fps);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateFPS, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateFPS, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Fullscreen)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Fullscreen)) {
           this.FullScreen();
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Fullscreen, false);
-        }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.LetterBox)) {
-          Flip(ref GlobalStats, (ushort)GlobalFlags.LetterBoxMode);
-          UpdateScaleFactor();
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.LetterBox, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Fullscreen, false);
         }
 
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateVolume)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateVolume)) {
           MasterVolume(PauseMenu.SelectedValues[(int)Menus.Audio].X);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateVolume, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateVolume, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateSFX)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateSFX)) {
           SFXVolume(PauseMenu.SelectedValues[(int)Menus.Audio].Y);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateSFX, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateSFX, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateMusic)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateMusic)) {
           MusicVolume(PauseMenu.SelectedValues[(int)Menus.Audio].Z);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateMusic, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateMusic, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Mute)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Mute)) {
           Mute();
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Mute, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Mute, false);
         }
 
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Display)) {
-          PauseMenu.Initialize(Menus.Display);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Display, false);
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Display)) {
+          PauseMenu.InitializeMenu(Menus.Display);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Display, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Audio)) {
-          PauseMenu.Initialize(Menus.Audio);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Audio, false);
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Audio)) {
+          PauseMenu.InitializeMenu(Menus.Audio);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Audio, false);
         }
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.Controls)) {
-          PauseMenu.Initialize(Menus.Controls);
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.Controls, false);
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.Controls)) {
+          PauseMenu.InitializeMenu(Menus.Controls);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.Controls, false);
         }
       } else {
-        if (IsSet(PauseMenu.Stats, (ushort)MenuStatus.UpdateScreen)) {
+        if (IsSet(PauseMenu.Stats, (ushort)MenuFlags.UpdateScreen)) {
           if (IsSet(GlobalStats, (uint)GlobalFlags.Fullscreen))
             this.FullScreen();
 
           this.Resize(PauseMenu.ValidResolutions[(int)PauseMenu.SelectedValues[(int)Menus.Display].X]);
 
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.UpdateScreen, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.UpdateScreen, false);
         }
       }
     }
@@ -284,14 +281,14 @@ namespace Cube_Run_C_ {
       this.SceneRenderTarget?.Dispose();
       this.ScreenTarget?.Dispose();
       this.SceneRenderTarget = new(this.GraphicsDevice, RenderSize.Width, RenderSize.Height);
-      this.ScreenTarget      = new(this.GraphicsDevice, ScreenSize.Width, ScreenSize.Height, false, SurfaceFormat.Color, DepthFormat.None);
+      this.ScreenTarget = new(this.GraphicsDevice, ScreenSize.Width, ScreenSize.Height, false, SurfaceFormat.Color, DepthFormat.None);
       
-      VisualManager.BrightnessEffect.Parameters["ScreenSize"].SetValue(new Vector2(RenderSize.Width, RenderSize.Height));
-      VisualManager.BrightnessEffect.Parameters["InnerRadius"].SetValue(LanternLightWidth * Camera.Scale);
-      VisualManager.BrightnessEffect.Parameters["MiddleRadius"].SetValue(LanternLightWidth * 1.25f * Camera.Scale);
-      VisualManager.BrightnessEffect.Parameters["OuterRadius"].SetValue(LanternLightWidth * 2.0f * Camera.Scale);
-      VisualManager.BrightnessEffect.Parameters["FarRadius"].SetValue(LanternLightWidth * 2.5f * Camera.Scale);
-      VisualManager.BrightnessEffect.Parameters["PixelSize"].SetValue(5.25f * Camera.Scale);
+      Shader.SetVariable("ScreenSize", new Vector2(RenderSize.Width, RenderSize.Height));
+      Shader.SetVariable("InnerRadius", LanternLightWidth * Camera.Scale);
+      Shader.SetVariable("MiddleRadius", LanternLightWidth * 1.25f * Camera.Scale);
+      Shader.SetVariable("OuterRadius", LanternLightWidth * 2.0f * Camera.Scale);
+      Shader.SetVariable("FarRadius", LanternLightWidth * 2.5f * Camera.Scale);
+      Shader.SetVariable("PixelSize", 5.25f * Camera.Scale);
 
       Set(ref GlobalStats, (ushort)GlobalFlags.UpdateLantern, false);
     }
@@ -331,19 +328,19 @@ namespace Cube_Run_C_ {
     
 
     private void TimeWarn() {
-      if (!IsSet(this.TimeWarnStats, (byte)TimeWarnFlags.TimeWarning))
+      if (!IsSet(this.TimeWarnStats, (byte)TimeWarningFlags.TimeWarning))
         return;
 
       double CurrentMinutes = CurrentGameTime.TotalMinutes;
       
-      if (!IsSet(this.TimeWarnStats, (byte)TimeWarnFlags.FirstWarning) && CurrentMinutes >= Times.TimeWarnings[0]) {
-        Set(ref this.TimeWarnStats, (byte)TimeWarnFlags.FirstWarning, true);
+      if (!IsSet(this.TimeWarnStats, (byte)TimeWarningFlags.FirstWarning) && CurrentMinutes >= Times.TimeWarnings[0]) {
+        Set(ref this.TimeWarnStats, (byte)TimeWarningFlags.FirstWarning, true);
       
-      } else if (!IsSet(this.TimeWarnStats, (byte)TimeWarnFlags.SecondWarning) && CurrentMinutes >= Times.TimeWarnings[1]) {
-        Set(ref this.TimeWarnStats, (byte)TimeWarnFlags.SecondWarning, true);
+      } else if (!IsSet(this.TimeWarnStats, (byte)TimeWarningFlags.SecondWarning) && CurrentMinutes >= Times.TimeWarnings[1]) {
+        Set(ref this.TimeWarnStats, (byte)TimeWarningFlags.SecondWarning, true);
 
-      } else if (!IsSet(this.TimeWarnStats, (byte)TimeWarnFlags.ThirdWarning) && CurrentMinutes >= Times.TimeWarnings[2]) {
-        Set(ref this.TimeWarnStats, (byte)TimeWarnFlags.ThirdWarning, true);
+      } else if (!IsSet(this.TimeWarnStats, (byte)TimeWarningFlags.ThirdWarning) && CurrentMinutes >= Times.TimeWarnings[2]) {
+        Set(ref this.TimeWarnStats, (byte)TimeWarningFlags.ThirdWarning, true);
 
       }
     }
@@ -358,16 +355,16 @@ namespace Cube_Run_C_ {
     }
 
     private void CheckExit() {
-      if (IsSet(GlobalStats, (ushort)GlobalFlags.Exit)) {
+      if (IsSet(GlobalStats, (ushort)GlobalFlags.ForceExit) || IsSet(GlobalStats, (ushort)GlobalFlags.Exit)) {
         Set(ref GlobalStats, (ushort)GlobalFlags.Exit, false);
         Exit();
         return;
       }
 
-      if (IsSet(ExitWindow.Stats, (byte)ExitWindowStats.Active)) {
+      if (IsSet(ExitWindow.Stats, (byte)ExitWindowFlags.Active)) {
         ExitWindow.Update();
 
-        if (IsSet(ExitWindow.Stats, (byte)ExitWindowStats.ConfirmedExit)) {
+        if (IsSet(ExitWindow.Stats, (byte)ExitWindowFlags.ConfirmedExit)) {
           Exit();
           return;
         }
@@ -385,9 +382,7 @@ namespace Cube_Run_C_ {
       this.GraphicsDevice.SetRenderTarget(this.SceneRenderTarget);
       this.GraphicsDevice.Clear(FillColor);
       
-      if (!Paused && IsSet(Level.FlagStats, (byte)LevelStatFlags.Active)) {
-        Camera.UpdateDraw(Globals.Player.Rect.Center());
-
+      if (!Paused && IsSet(PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Active)) {
         this.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, null, Camera.SpriteMatrix);
         Camera.Draw(this.SpriteBatch);
         this.SpriteBatch.End();
@@ -411,32 +406,32 @@ namespace Cube_Run_C_ {
           
         this.SpriteBatch.End();
       } else {
-        if (IsSet(Level.FlagStats, (byte)LevelStatFlags.Active)) {
-          if (IsSet(Globals.Player.Stats, (uint)PlayerData.PlayerStats.LanternEnabled))
-            VisualManager.BrightnessEffect.Parameters["PlayerScreenPosition"].SetValue(Camera.WorldToScreen(Globals.Player.Rect.Center()));
-
-          this.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, VisualManager.BrightnessEffect);
+        if (IsSet(PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Active)) {
+          this.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp, null, null, Shader);
           this.SpriteBatch.Draw(this.SceneRenderTarget, Camera.GameViewport.ToVector2(), Color.White);
           this.SpriteBatch.End();
-         
-          if (IsSet(GlobalStats, (ushort)GlobalFlags.LetterBoxMode)) {
-            this.SpriteBatch.Begin();
-            Camera.DrawLetterBoxBars(this.SpriteBatch);
-            this.SpriteBatch.End();
-          }
+
+          this.SpriteBatch.Begin();
+
+          Camera.DrawLetterBoxBars(this.SpriteBatch);
+
+          if (IsSet(PlayerDisplay.Stats, (byte)PlayerDisplayFlags.Active))
+            PlayerDisplay.Draw(this.SpriteBatch);
+
+          this.SpriteBatch.End();
         }
 
-        if (IsSet(EndLevelScreen.Stats, (byte)EndLevelScreenStats.Displaying) || IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenStats.Active)) {
+        if (IsSet(PlatformerEndScreen.Stats, (byte)PlatformerEndFlags.Displaying) || IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenFlags.Active)) {
           this.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp);
 
-          if (IsSet(EndLevelScreen.Stats, (byte)EndLevelScreenStats.Displaying)) {
-            EndLevelScreen.Draw(this.SpriteBatch);
+          if (IsSet(PlatformerEndScreen.Stats, (byte)PlatformerEndFlags.Displaying)) {
+            PlatformerEndScreen.Draw(this.SpriteBatch);
 
-            if (IsSet(SaveWindow.Stats, (byte)SaveWindowStats.Active))
+            if (IsSet(SaveWindow.Stats, (byte)SaveWindowFlags.Active))
               SaveWindow.Draw(this.SpriteBatch);
           }
 
-          if (IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenStats.Active))
+          if (IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenFlags.Active))
             TmxLoadingScreen.Draw(this.SpriteBatch);
 
           this.SpriteBatch.End();
@@ -448,12 +443,12 @@ namespace Cube_Run_C_ {
       this.SpriteBatch.Draw(this.ScreenTarget, Vector2.Zero, Color.White);
       this.SpriteBatch.End();
 
-      if (IsSet(ExitWindow.Stats, (byte)ExitWindowStats.Active) || IsSet(TitleScreen.Stats, (byte)TitleScreenStats.Active) || DisplayMouse) {
+      if (IsSet(ExitWindow.Stats, (byte)ExitWindowFlags.Active) || IsSet(TitleScreen.Stats, (byte)TitleScreenFlags.Active) || DisplayMouse) {
         this.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.PointClamp);
 
-        if (IsSet(TitleScreen.Stats, (byte)TitleScreenStats.Active)) {
+        if (IsSet(TitleScreen.Stats, (byte)TitleScreenFlags.Active)) {
           TitleScreen.Draw(this.SpriteBatch);
-        } else if (IsSet(ExitWindow.Stats, (byte)ExitWindowStats.Active)) {
+        } else if (IsSet(ExitWindow.Stats, (byte)ExitWindowFlags.Active)) {
           ExitWindow.Draw(this.SpriteBatch);
         }
           
@@ -472,17 +467,17 @@ namespace Cube_Run_C_ {
       this.CheckExit();
       this.CheckShortcuts();
 
-      if (!IsSet(PauseMenu.Stats, (ushort)MenuStatus.Active) && (InputManager.IsButtonPressed(Buttons.Back) || InputManager.IsKeyPressed(Keys.Escape)) && !IsSet(EndLevelScreen.Stats, (byte)EndLevelScreenStats.Displaying)) {
+      if (!IsSet(PauseMenu.Stats, (ushort)MenuFlags.Active) && (InputManager.IsButtonPressed(Buttons.Back) || InputManager.IsKeyPressed(Keys.Escape)) && !IsSet(PlatformerEndScreen.Stats, (byte)PlatformerEndFlags.Displaying)) {
         Pause(true);
         FillColor = Color.Black;
       }
 
-      if (IsSet(TitleScreen.Stats, (byte)TitleScreenStats.Active)) {
+      if (IsSet(TitleScreen.Stats, (byte)TitleScreenFlags.Active)) {
         TitleScreen.Update();
       } else {
-        if (IsSet(GlobalStats, (ushort)GlobalFlags.Paused) && IsSet(PauseMenu.Stats, (ushort)MenuStatus.Active)) {
+        if (IsSet(GlobalStats, (ushort)GlobalFlags.Paused) && IsSet(PauseMenu.Stats, (ushort)MenuFlags.Active)) {
           this.UpdatePauseStats(true);
-        } else if (IsSet(GlobalStats, (ushort)GlobalFlags.Paused) != IsSet(PauseMenu.Stats, (ushort)MenuStatus.Active)) {
+        } else if (IsSet(GlobalStats, (ushort)GlobalFlags.Paused) != IsSet(PauseMenu.Stats, (ushort)MenuFlags.Active)) {
           Set(ref GlobalStats, (ushort)GlobalFlags.Paused, true);
         } else {
           this.UpdatePauseStats(false);
@@ -490,12 +485,19 @@ namespace Cube_Run_C_ {
           this.DeltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
           CurrentGameTime = gameTime.TotalGameTime;
 
-          if (IsSet(Level.FlagStats, (byte)LevelStatFlags.Active)) {
-            Level.Update(this.DeltaTime);
-          } else if (IsSet(EndLevelScreen.Stats, (byte)EndLevelScreenStats.Displaying)) {
-            EndLevelScreen.Update(this.DeltaTime);
+          if (IsSet(PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Active)) {
+            PlatformerLevel.Update(this.DeltaTime);
+
+            if (Globals.Player is not null) {
+              if (IsSet(Globals.Player.Stats, (uint)PlayerStats.LanternEnabled))
+                Shader.SetVariable("PlayerScreenPosition", Camera.WorldToScreen(Globals.Player.Rect.Center()));
+
+              Camera.Update(Globals.Player.Rect.Center());
+            }
+          } else if (IsSet(PlatformerEndScreen.Stats, (byte)PlatformerEndFlags.Displaying)) {
+            PlatformerEndScreen.Update(this.DeltaTime);
             SaveWindow.Update();
-          } else if (IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenStats.Active)) {
+          } else if (IsSet(TmxLoadingScreen.Stats, (byte)TmxLoadScreenFlags.Active)) {
             TmxLoadingScreen.Update(this.DeltaTime);
           }
 

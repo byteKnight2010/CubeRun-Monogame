@@ -12,7 +12,7 @@ using static Cube_Run_C_.Assets.VisualManager;
 using static Cube_Run_C_.Camera;
 using static Cube_Run_C_.ConfigManager;
 using static Cube_Run_C_.Globals;
-using static Cube_Run_C_.Globals.PlayerData;
+using static Cube_Run_C_.PlatformerPlayer;
 using static Cube_Run_C_.Sprites;
 using static Cube_Run_C_.Tools;
 using static Cube_Run_C_.Tools.BitMask;
@@ -25,7 +25,8 @@ namespace Cube_Run_C_ {
       Display = 0,
       Audio = 1,
       Controls = 2,
-      Main = 3
+      Main = 3,
+      Initial = 4
     }
 
     public enum SaveOption : byte {
@@ -39,6 +40,13 @@ namespace Cube_Run_C_ {
       TopRight = 1,
       BottomLeft = 2,
       BottomRight = 3  
+    }
+
+    public enum PlayerDisplayElements : byte {
+      Lives = 0,
+      Coins = 1,
+      KeyCoins = 2,
+      LivesOverflow = 3
     }
 
 
@@ -77,13 +85,13 @@ namespace Cube_Run_C_ {
 
       public static void Display() {
         Set(ref GlobalStats, (ushort)GlobalFlags.MouseSpriteVisible, true);
-        Set(ref Stats, (byte)TitleScreenStats.Active, true);
+        Set(ref Stats, (byte)TitleScreenFlags.Active, true);
 
         UpdateScale();
       }
 
       public static void UpdateScale() {
-        if (!IsSet(Stats, (byte)TitleScreenStats.Active))
+        if (!IsSet(Stats, (byte)TitleScreenFlags.Active))
           return;
 
         Texture2D[] SelectionIcons = [GetTexture("Images/UIImages/Medals/Medal_4"), GetTexture("Images/UIImages/Medals/Medal_3"), GetTexture("Images/UIImages/Medals/Medal_2"), GetTexture("Images/UIImages/Medals/Medal_1")];
@@ -108,7 +116,6 @@ namespace Cube_Run_C_ {
 
 
       private static void Play() {
-        FillColor = BackgroundColor;
         TmxLoadingScreen.Display(true);
 
         Task.Run(TmxLoadingScreen.LoadAsync);
@@ -186,7 +193,7 @@ namespace Cube_Run_C_ {
           Progress = 0;
         }
 
-        Set(ref Stats, (byte)TmxLoadScreenStats.Active, show);
+        Set(ref Stats, (byte)TmxLoadScreenFlags.Active, show);
       }
 
       public static void SetProgress(int progress, string stage) {
@@ -198,39 +205,54 @@ namespace Cube_Run_C_ {
 
 
       public static async Task LoadAsync() {
-        Set(ref Stats, (byte)TmxLoadScreenStats.Loading, true);
+        Set(ref Stats, (byte)TmxLoadScreenFlags.Loading, true);
 
         Thread.Sleep(100);
-        SetProgress(0, "Loading Music");
+        SetProgress(0, "Loading Song");
 
         UnloadAllSounds();
         LoadSong("Sounds/Songs/MidLevel");
+
+        Thread.Sleep(100);
+        SetProgress(15, "Loading SFX");
+
         GetSound("Sounds/Effects/Coin", true);
         GetSound("Sounds/Effects/FallingSpikeDestroy", true);
 
         Thread.Sleep(100);
-        SetProgress(50, "Loading Animations");
+        SetProgress(30, "Loading Animations");
 
         SetupAnimations(GameType.Platformer);
 
         Thread.Sleep(100);
-        SetProgress(75, "Loading Player Save");
+        SetProgress(45, "Loading UI Elements");
+
+        PlayerDisplay.Initialize();
+
+        Thread.Sleep(100);
+        SetProgress(60, "Loading Player Save");
 
         await SaveSystem.Load();
 
         Thread.Sleep(100);
-        SetProgress(95, "Loading Settings");
+        SetProgress(75, "Loading Settings");
 
         await SaveSystem.LoadSettings();
 
-        SetProgress(100, "Finished!");
         Thread.Sleep(100);
+        SetProgress(90, "Finalizing Initialization");
 
-        CurrentLevel = 1;
-        LevelData.Difficulty = "Base";
+        for (int Index = 0; Index < SpriteGroups.Length; Index++) {
+          SpriteGroups[Index] = new();
+        }
+
+        Thread.Sleep(100);
+        SetProgress(100, "Finished!");
+
+        CurrentLevel = 39;
         
-        Set(ref Stats, (byte)TmxLoadScreenStats.Loading, false);
-        Set(ref Stats, (byte)TmxLoadScreenStats.Finished, true);
+        Set(ref Stats, (byte)TmxLoadScreenFlags.Loading, false);
+        Set(ref Stats, (byte)TmxLoadScreenFlags.Finished, true);
       }
 
 
@@ -264,11 +286,11 @@ namespace Cube_Run_C_ {
       }
 
       public static void Update(float deltaTime) {
-        if (IsSet(Stats, (byte)TmxLoadScreenStats.Finished)) {
-          Set(ref Stats, (byte)TmxLoadScreenStats.Active, false);
+        if (IsSet(Stats, (byte)TmxLoadScreenFlags.Finished)) {
+          Set(ref Stats, (byte)TmxLoadScreenFlags.Active, false);
           Display(false);
 
-          LevelController.BeginLevel();
+          PlatformerLevelController.BeginLevel();
           return;
         }
 
@@ -303,63 +325,188 @@ namespace Cube_Run_C_ {
 
 
     public static class PlayerDisplay {
-      private static DisplayText[] StatTexts = [DisplayText.Empty, DisplayText.Empty];
-      private static List<BasicSprite> HeartSprites = new();
-      private static List<BasicSprite> CoinSprites = new();
-      private static List<BasicSprite> KeyCoinSprites = new();
-      private static Rectangle[] DisplayRects = [Rectangle.Empty, Rectangle.Empty, Rectangle.Empty];
-      private static readonly byte[] ImageWidths = [0, 0, 0];
-      private static ushort StoredLives = Lives;
-      private static ushort StoredCoins = Coins;
-      private static byte StoredKeyCoins = KeyCoins;
-      private static bool Active;
+      private static readonly BasicSprite[] LifeSprites = new BasicSprite[5];
+      private static readonly Texture2D[] Images = new Texture2D[4];
+      private static readonly DisplayText[] DisplayTexts = new DisplayText[3];
+      private static readonly Rectangle[] InflatedDisplayRects = new Rectangle[3];
+      private static readonly Rectangle[] DisplayRects = new Rectangle[3];
+      private static readonly Dimensions[] ImageDimensions = new Dimensions[4];
+      private static BasicSprite CoinSprite;
+      private static BasicSprite KeyCoinSprite;
+      private static ushort StoredLives = ushort.MinValue;
+      private static ushort StoredCoins = ushort.MinValue;
+      public const byte HEART_START_POS = 10;
+      public const byte COIN_START_POS = 10;
+      private static byte StoredKeyCoins = byte.MinValue;
+      public static byte Stats = 0x00;
 
 
       public static void Initialize() {
-        ImageWidths[0] = (byte)GetTexture("Images/UIImages/Heart").Width;
-        ImageWidths[1] = (byte)GetTexture("Images/UIImages/Coin").Width;
-        ImageWidths[2] = (byte)GetTexture("Images/UIImages/KeyCoin").Width;
+        string[] ImagePaths = ["Life", "Coin", "KeyCoin", "LifeOverflow"];
 
-        Active = true;
+        for (int Index = 0; Index < Images.Length; Index++) {
+          Images[Index] = GetTexture($"Images/UIImages/PLayerDisplay/{ImagePaths[Index]}");
+          ImageDimensions[Index] = Images[Index].GetDimensions();
+        }
+      }
+
+      public static void Display() {
+        UpdateLives(true);
+        UpdateScore(true);
+        Set(ref Stats, (byte)PlayerDisplayFlags.Active, true);
       }
 
 
-      public static void UpdateLives(bool forceUpdate) {
-        if (!forceUpdate && StoredLives == PlayerData.Lives)
+      public static void UpdateLives(bool forceUpdate = false) {
+        if (!forceUpdate && StoredLives == Lives)
           return;
+        
+        
+        for (int Index = 0; Index < LifeSprites.Length; Index++) {
+          LifeSprites[Index] = null;
+        }
 
-        StoredLives = PlayerData.Lives;
+        StoredLives = Lives;
+        Set(ref Stats, (byte)PlayerDisplayFlags.DisplayHearts, true);
+
+        if (StoredLives == 0) {
+          Set(ref Stats, (byte)PlayerDisplayFlags.DisplayHearts, false);
+          return;
+        }
+
+        float Padding = HEART_START_POS * Scale;
+        float HeartX = Padding;
+        int LivesNav = (int)PlayerDisplayElements.Lives;
+
+        if (StoredLives > 5) {
+          string LifeText = StoredLives.ToString();
+          Vector2 HalfTextSize = SpriteFonts[(int)Fonts.PauseMenu].MeasureString(LifeText);
+          int LivesOverflowNav = (int)PlayerDisplayElements.LivesOverflow;
+
+          LifeSprites[0] = new(Images[LivesOverflowNav], new(HeartX, Padding));
+          DisplayTexts[LivesNav] = new(LifeText, new(LifeSprites[0].Rect.X + ImageDimensions[LivesOverflowNav].Width, LifeSprites[0].Rect.Y), Color.Pink);
+        } else {
+          for (int Index = 0; Index < StoredLives; Index++) {
+            LifeSprites[Index] = new(Images[LivesNav], new(HeartX, Padding));
+            HeartX += ImageDimensions[LivesNav].Width * 0.75f * Scale;
+          }
+
+          HeartX +=ImageDimensions[LivesNav].Width >> 2;
+        }
+
+        DisplayRects[LivesNav] = new(0, 0, (int)(HeartX + Padding), (int)(Padding * 2f) + ImageDimensions[LivesNav].Height);
+        InflatedDisplayRects[LivesNav] = DisplayRects[LivesNav];
+        InflatedDisplayRects[LivesNav].Inflate(5, 5);
       }
 
-      public static void UpdateScore(bool forceUpdate) {
-        if (!forceUpdate && StoredCoins == PlayerData.Coins)
+      public static void UpdateScore(bool forceUpdate = false) {
+        if (!forceUpdate && StoredCoins == Coins)
           return;
+        
+        const int PADDING = COIN_START_POS;
+        int CoinNav = (int)PlayerDisplayElements.Coins;
+        int CoinWidth = ImageDimensions[CoinNav].Width;
+        string CoinText = StoredCoins.ToString();
+        Vector2 TextSize = SpriteFonts[(int)Fonts.PauseMenu].MeasureString(CoinText);
 
-        StoredCoins = PlayerData.Coins;
+        int TextX = (int)(ScreenDimensions.Width - TextSize.X - COIN_START_POS);
+
+        CoinSprite = new(Images[CoinNav], new(TextX - CoinWidth - (PADDING >> 1), PADDING));
+        StoredCoins = Coins;
+        
+        DisplayTexts[CoinNav] = new(CoinText, new(TextX, PADDING), Color.Pink);
+        DisplayRects[CoinNav] = new(TextX - PADDING - CoinWidth, 0, (int)(CoinWidth + (PADDING >> 1) + TextSize.X + (PADDING << 1)), 0);
+        InflatedDisplayRects[CoinNav] = DisplayRects[CoinNav];
+        InflatedDisplayRects[CoinNav].Inflate(5, 5);
       }
 
-      public static void UpdateKeyCoins(bool forceUpdate) {
-        if (!forceUpdate && StoredKeyCoins == PlayerData.KeyCoins)
+      public static void UpdateKeyCoins(bool forceUpdate = false) {
+        if (!forceUpdate && StoredKeyCoins == KeyCoins)
+          return;
+        
+        KeyCoinSprite = null;
+        StoredKeyCoins = KeyCoins;
+        Set(ref Stats, (byte)PlayerDisplayFlags.DisplayKeyCoins, true);
+
+        if (StoredKeyCoins == 0) {
+          Set(ref Stats, (byte)PlayerDisplayFlags.DisplayKeyCoins, false);
+          return;
+        } else {
+          int KeyCoinNav = (int)PlayerDisplayElements.KeyCoins;
+
+          DisplayRects[KeyCoinNav] = new();
+          InflatedDisplayRects[KeyCoinNav] = DisplayRects[KeyCoinNav];
+          InflatedDisplayRects[KeyCoinNav].Inflate(5, 5);
+        }
+      }
+
+
+      public static void UpdateScaleFactor() {
+        if (!IsSet(Stats, (byte)PlayerDisplayFlags.Active))
           return;
 
-        StoredKeyCoins = PlayerData.KeyCoins;
+        int ElementNav = int.MinValue;
+
+        if (IsSet(Stats, (byte)PlayerDisplayFlags.DisplayHearts)) {
+          float Padding = HEART_START_POS * Scale;
+          float HeartX = Padding;
+          ElementNav = (int)PlayerDisplayElements.Lives;
+
+          for (int Index = 0; Index < LifeSprites.Length; Index++) {
+            if (LifeSprites[Index] is not null) {
+              LifeSprites[Index].Rect.TopLeft(new Vector2(HeartX, Padding));
+              HeartX += (int)(ImageDimensions[ElementNav].Width * 0.75f * Scale);
+            }
+          }
+        }
       }
 
 
       public static void Draw(SpriteBatch spriteBatch) {
-      }
-      
-      public static void Update() {
-        if (!Active)
-          return;
+        SpriteFont Font = SpriteFonts[(int)Fonts.PauseMenu];
+        int ElementNav = int.MinValue;
 
-        UpdateLives(false);
-        UpdateScore(false);
-        UpdateKeyCoins(false);
+        if (IsSet(Stats, (byte)PlayerDisplayFlags.DisplayHearts)) {
+          ElementNav = (int)PlayerDisplayElements.Lives;
+
+          UITools.DrawRectOutline(spriteBatch, Colors.Pink, InflatedDisplayRects[ElementNav], 5);
+          UITools.DrawRect(spriteBatch, DisplayRects[ElementNav], Colors.White);
+
+          spriteBatch.Draw(LifeSprites[0].Image, LifeSprites[0].Rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+
+          if (StoredLives > 5) {
+            spriteBatch.DrawString(Font, DisplayTexts[ElementNav].Text, DisplayTexts[ElementNav].Position, DisplayTexts[ElementNav].Color, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+          } else {
+            for (int Index = 1; Index < LifeSprites.Length; Index++) {
+              if (LifeSprites[Index] != null)
+                spriteBatch.Draw(LifeSprites[Index].Image, LifeSprites[Index].Rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+            }
+          }
+        }
+
+        if (IsSet(Stats, (byte)PlayerDisplayFlags.DisplayCoins)) {
+          ElementNav = (int)PlayerDisplayElements.Coins;
+
+          UITools.DrawRectOutline(spriteBatch, Colors.Pink, InflatedDisplayRects[ElementNav], 5);
+          UITools.DrawRect(spriteBatch, DisplayRects[ElementNav], Colors.White);
+
+          spriteBatch.Draw(CoinSprite.Image, CoinSprite.Rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+          spriteBatch.DrawString(Font, DisplayTexts[ElementNav].Text, DisplayTexts[ElementNav].Position, DisplayTexts[ElementNav].Color);
+        }
+
+        if (IsSet(Stats, (byte)PlayerDisplayFlags.DisplayKeyCoins)) {
+          ElementNav = (int)PlayerDisplayElements.KeyCoins;
+
+          UITools.DrawRectOutline(spriteBatch, Colors.Pink, InflatedDisplayRects[ElementNav], 5);
+          UITools.DrawRect(spriteBatch, DisplayRects[ElementNav], Colors.White);
+
+          spriteBatch.Draw(KeyCoinSprite.Image, KeyCoinSprite.Rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
+          spriteBatch.DrawString(Font, DisplayTexts[ElementNav].Text, DisplayTexts[ElementNav].Position, DisplayTexts[ElementNav].Color);
+        }
       }
     }
 
-    public static class EndLevelScreen {
+    public static class PlatformerEndScreen {
       private static readonly Rectangle[] StatRects = [Rectangle.Empty, Rectangle.Empty, Rectangle.Empty];
       private static readonly DisplayText[] DisplayTexts = [DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty];
       private static readonly BasicSprite[] MedalSprites = [null, null, null];
@@ -368,7 +515,7 @@ namespace Cube_Run_C_ {
       private static readonly ushort[] LevelMaxStats = [0, 0, 0];
       private static byte[] MedalScores = [0, 0, 0];
       private static BasicAnimatedSprite AdvanceButton;
-      private static readonly Tools.Timer AdvanceTimer = new(2000, () => Set(ref Stats, (byte)EndLevelScreenStats.CanAdvance, true));
+      private static readonly Tools.Timer AdvanceTimer = new(2000, () => Set(ref Stats, (byte)PlatformerEndFlags.CanAdvance, true));
       private static Rectangle DrawRect = Rectangle.Empty;
       private static Rectangle InflatedDrawRect = Rectangle.Empty;
       private const float VERTICAL_TEXT_PADDING = 50 / 4;
@@ -377,14 +524,14 @@ namespace Cube_Run_C_ {
 
 
       public static void Display() {
-        Set(ref Stats, (byte)EndLevelScreenStats.Displaying, true);
+        Set(ref Stats, (byte)PlatformerEndFlags.Displaying, true);
 
-        LevelStats[0] = Level.Stats.Deaths;
-        LevelStats[1] = Level.Stats.Coins;
-        LevelStats[2] = Level.Stats.LifeBlocks;
-        LevelMaxStats[0] = Level.MaxStats.Deaths;
-        LevelMaxStats[1] = Level.MaxStats.Coins;
-        LevelMaxStats[2] = Level.MaxStats.LifeBlocks;
+        LevelStats[0] = PlatformerLevel.Stats.Deaths;
+        LevelStats[1] = PlatformerLevel.Stats.Coins;
+        LevelStats[2] = PlatformerLevel.Stats.LifeBlocks;
+        LevelMaxStats[0] = PlatformerLevel.MaxStats.Deaths;
+        LevelMaxStats[1] = PlatformerLevel.MaxStats.Coins;
+        LevelMaxStats[2] = PlatformerLevel.MaxStats.LifeBlocks;
 
         DisplayTexts[3] = new($"FLOOR: {CurrentWorld}", new(TEXT_PADDING, VERTICAL_TEXT_PADDING), Color.White);
         DisplayTexts[4] = new($"LEVEL: {CurrentLevel - WorldToLevels() * CurrentWorld}", new(DEFAULT_DIMENSIONS.Width - TEXT_PADDING, VERTICAL_TEXT_PADDING), Color.White);
@@ -405,6 +552,7 @@ namespace Cube_Run_C_ {
         DisplayTexts[4] = DisplayText.Empty;
 
         AdvanceButton = null;
+        Stats = 0x00;
       }
 
 
@@ -444,7 +592,7 @@ namespace Cube_Run_C_ {
       }
 
       public static void UpdateScale() {
-        if (!IsSet(Stats, (byte)EndLevelScreenStats.Displaying))
+        if (!IsSet(Stats, (byte)PlatformerEndFlags.Displaying))
           return;
 
         SpriteFont Font = SpriteFonts[(int)Fonts.EndLevelScreen];
@@ -481,7 +629,7 @@ namespace Cube_Run_C_ {
           InflatedDrawRect = DrawRect;
           InflatedDrawRect.Inflate(5, 5);
 
-          UITools.DrawRectOutline(spriteBatch, ColorTextures[(int)Colors.Tan], InflatedDrawRect, 5);
+          UITools.DrawRectOutline(spriteBatch, Colors.Tan, InflatedDrawRect, 5);
           
           spriteBatch.DrawString(Font, DisplayTexts[Index].Text, DisplayTexts[Index].Position, DisplayTexts[Index].Color, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
           spriteBatch.Draw(MedalSprites[Index].Image, MedalSprites[Index].Rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
@@ -490,7 +638,7 @@ namespace Cube_Run_C_ {
         UITools.DrawVerticalText(Font, DisplayTexts[3], TEXT_PADDING, spriteBatch, Directions.Left);
         UITools.DrawVerticalText(Font, DisplayTexts[4], TEXT_PADDING, spriteBatch, Directions.Right);
 
-        if (IsSet(Stats, (byte)EndLevelScreenStats.CanAdvance)) 
+        if (IsSet(Stats, (byte)PlatformerEndFlags.CanAdvance)) 
           spriteBatch.Draw(AdvanceButton.GetImage(), AdvanceButton.Rect.TopLeft(), AdvanceButton.GetFrame(), Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
       }
     
@@ -499,21 +647,21 @@ namespace Cube_Run_C_ {
         AdvanceButton?.Update(deltaTime);
 
         if (InputManager.IsKeyPressed(Keys.Space) || InputManager.IsButtonPressed(Buttons.A)) {
-          if (IsSet(Stats, (byte)EndLevelScreenStats.CanAdvance)) {
+          if (IsSet(Stats, (byte)PlatformerEndFlags.CanAdvance)) {
             AdvanceButton = null;
             SaveWindow.Display();
 
-            Set(ref Stats, (byte)EndLevelScreenStats.CanAdvance, false);
+            Set(ref Stats, (byte)PlatformerEndFlags.CanAdvance, false);
           } else {
             AdvanceTimer.Deactivate();
           }
         }
 
-        if (IsSet(SaveWindow.Stats, (byte)SaveWindowStats.Advance)) {
+        if (IsSet(SaveWindow.Stats, (byte)SaveWindowFlags.Advance)) {
           Reset();
-          LevelController.BeginLevel();
-          Set(ref Stats, (byte)EndLevelScreenStats.Displaying, false);
-          Set(ref SaveWindow.Stats, (byte)SaveWindowStats.Advance, false);
+          PlatformerLevelController.BeginLevel();
+          Set(ref Stats, (byte)PlatformerEndFlags.Displaying, false);
+          Set(ref SaveWindow.Stats, (byte)SaveWindowFlags.Advance, false);
         }
       }
     }
@@ -571,7 +719,7 @@ namespace Cube_Run_C_ {
 
 
         Set(ref GlobalStats, (ushort)GlobalFlags.EnableMouse, true);
-        Set(ref Stats, (byte)SaveWindowStats.Active, true);
+        Set(ref Stats, (byte)SaveWindowFlags.Active, true);
 
         UpdateScale();
       }
@@ -598,7 +746,7 @@ namespace Cube_Run_C_ {
 
 
       public static void UpdateScale() {
-        if (!IsSet(Stats, (byte)SaveWindowStats.Active))
+        if (!IsSet(Stats, (byte)SaveWindowFlags.Active))
           return;
 
         Texture2D ButtonTexture = GetTexture("Images/UIImages/SaveButton");
@@ -627,7 +775,7 @@ namespace Cube_Run_C_ {
 
 
       public static void Draw(SpriteBatch spriteBatch) {
-        if (!IsSet(Stats, (byte)SaveWindowStats.Active))
+        if (!IsSet(Stats, (byte)SaveWindowFlags.Active))
           return;
 
         spriteBatch.Draw(ColorTextures[(int)Colors.Tan], BackgroundRect, null, Color.White, 0f, Vector2.Zero, SpriteEffects.None, 0f);
@@ -646,7 +794,7 @@ namespace Cube_Run_C_ {
       }
 
       public static void Update() {
-        if (!IsSet(Stats, (byte)SaveWindowStats.Active))
+        if (!IsSet(Stats, (byte)SaveWindowFlags.Active))
           return;
 
         for (int Index = 0; Index < SelectionButtons.Length; Index++) {
@@ -664,16 +812,16 @@ namespace Cube_Run_C_ {
         }
 
         if (SelectedOption == SaveOption.Save) {
-          if (IsSet(Stats, (byte)SaveWindowStats.SaveLevel)) {
+          if (IsSet(Stats, (byte)SaveWindowFlags.SaveLevel)) {
             SaveSystem.Save();
-          } else if (IsSet(Stats, (byte)SaveWindowStats.SaveSettings)) {
+          } else if (IsSet(Stats, (byte)SaveWindowFlags.SaveSettings)) {
             SaveSystem.SaveSettings();
           }
         }
 
         if (SelectedOption != SaveOption.None) {
           Reset();
-          Set(ref Stats, (byte)SaveWindowStats.Advance, true);
+          Set(ref Stats, (byte)SaveWindowFlags.Advance, true);
         }
       }
     }
@@ -716,8 +864,8 @@ namespace Cube_Run_C_ {
 
         Set(ref GlobalStats, (ushort)GlobalFlags.DisableMouse, true);
 
-        if (SoundManager.CurrentSong != null)
-          SoundManager.ResumeMusic();
+        if (CurrentSong != null)
+          ResumeMusic();
       }
 
 
@@ -747,21 +895,21 @@ namespace Cube_Run_C_ {
         NailRects[3] = new(BackgroundRect.Right - DoubleNailDimensions, BackgroundRect.Bottom - DoubleNailDimensions, NailDimensions, NailDimensions);
 
 
-        Set(ref Stats, (byte)ExitWindowStats.Active, true);
-        Set(ref Stats, (byte)ExitWindowStats.DisableMouse, !MouseDisplaying);
+        Set(ref Stats, (byte)ExitWindowFlags.Active, true);
+        Set(ref Stats, (byte)ExitWindowFlags.DisableMouse, !MouseDisplaying);
 
         if (!MouseDisplaying)
           Set(ref GlobalStats, (ushort)GlobalFlags.MouseSpriteVisible, true);
 
         UpdateScale();
 
-        if (SoundManager.CurrentSong != null)
-          SoundManager.PauseMusic();
+        if (CurrentSong != null)
+          PauseMusic();
       }
 
 
       public static void UpdateScale() {
-        if (!IsSet(Stats, (byte)ExitWindowStats.Active))
+        if (!IsSet(Stats, (byte)ExitWindowFlags.Active))
           return;
 
         Dimensions HalfDimensions = DEFAULT_DIMENSIONS.Half();
@@ -812,12 +960,12 @@ namespace Cube_Run_C_ {
 
         if (Button.Clicking(SelectionButtons[0])) {
           Button.ResetClick(SelectionButtons[0]);
-          Set(ref Stats, (byte)ExitWindowStats.ConfirmedExit, true);
+          Set(ref Stats, (byte)ExitWindowFlags.ConfirmedExit, true);
         }
 
         if (Button.Clicking(SelectionButtons[1])) {
           Button.ResetClick(SelectionButtons[1]);
-          if (IsSet(Stats, (byte)ExitWindowStats.DisableMouse)) 
+          if (IsSet(Stats, (byte)ExitWindowFlags.DisableMouse)) 
             Set(ref GlobalStats, (ushort)GlobalFlags.MouseSpriteVisible, false);
           
           Reset();
@@ -832,11 +980,11 @@ namespace Cube_Run_C_ {
       private static readonly Button[] MainMenuButtons = [null, null, null, null];
       private static readonly Button[] ContentButtons = [null, null, null, null, null, null];
       private static readonly DisplayText[] DisplayTexts = [DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty, DisplayText.Empty];
-      private static readonly MenuStatus[] DisplaySliderFlags = [MenuStatus.UpdateScreen, MenuStatus.UpdateBrightness, MenuStatus.UpdateFPS];
-      private static readonly MenuStatus[] AudioSliderFlags = [MenuStatus.UpdateVolume, MenuStatus.UpdateSFX, MenuStatus.UpdateMusic];
-      private static readonly MenuStatus[] ContentFlags = [MenuStatus.Display, MenuStatus.Audio, MenuStatus.Controls];
-      private static readonly MenuStatus[] MainFlags = [MenuStatus.Back, MenuStatus.Quit, MenuStatus.None, MenuStatus.None];
-      public static Vector3[] SelectedValues = [new(0f, 1.0f, 144f), Vector3.One, Vector3.Zero];
+      private static readonly MenuFlags[] DisplaySliderFlags = [MenuFlags.UpdateScreen, MenuFlags.UpdateBrightness, MenuFlags.UpdateFPS];
+      private static readonly MenuFlags[] AudioSliderFlags = [MenuFlags.UpdateVolume, MenuFlags.UpdateSFX, MenuFlags.UpdateMusic];
+      private static readonly MenuFlags[] ContentFlags = [MenuFlags.Display, MenuFlags.Audio, MenuFlags.Controls];
+      private static readonly MenuFlags[] MainFlags = [MenuFlags.Back, MenuFlags.Quit, MenuFlags.None, MenuFlags.None];
+      public static Vector3[] SelectedValues = [new(SetResolutionIndex, 1f, (float)ConfigManager.Graphics.TargetFPS), Vector3.Zero, Vector3.Zero];
       public static Menus CurrentMenu;
       private const float SLIDER_APPROXIMATION = 0.001f;
       public static ushort Stats = 0x0000;
@@ -846,7 +994,12 @@ namespace Cube_Run_C_ {
       private static byte SetResolutionIndex;
 
 
-      public static void Initialize(Menus menu) {
+      public static void Initialize() {
+        InitializeMenu(Menus.Display);
+        InitializeMenu(Menus.Main);
+      }
+
+      public static void InitializeMenu(Menus menu) {
         CurrentMenu = menu;
 
         Vector2[] SliderCaps = [Vector2.Zero, Vector2.Zero, Vector2.Zero];
@@ -876,17 +1029,15 @@ namespace Cube_Run_C_ {
             SliderCaps[1] = new(ConfigManager.Graphics.BrightnessMax, Gameplay.Hundredth * 2);
             SliderCaps[2] = new(FPS_BOUNDS[1], 100f / FPS_BOUNDS[1]);
             MainMenuButtons[2] = new(ButtonTexture, new(HalfWidth * 1.75f, BOTTOM_BUTTON_Y));
-            MainMenuButtons[3] = new(ButtonTexture, new(HalfWidth * 1.75f, 520));
-            MainFlags[2] = MenuStatus.Fullscreen;
-            MainFlags[3] = MenuStatus.LetterBox;
+            MainFlags[2] = MenuFlags.Fullscreen;
             break;
           case Menus.Audio:
             SliderCaps[0] = new(Audio.AudioMax, Gameplay.Hundredth);
             SliderCaps[1] = new(Audio.AudioMax, Gameplay.Hundredth);
             SliderCaps[2] = new(Audio.AudioMax, Gameplay.Hundredth);
             MainMenuButtons[2] = new(ButtonTexture, new(ViewportDimensions.Width - QuarterWidth, BOTTOM_BUTTON_Y));
-            MainFlags[2] = MenuStatus.Mute;
-            MainFlags[3] = MenuStatus.None;
+            MainFlags[2] = MenuFlags.Mute;
+            MainFlags[3] = MenuFlags.None;
             break;
           case Menus.Controls:
             for (int Index = 0; Index < 3; Index++) {
@@ -925,7 +1076,7 @@ namespace Cube_Run_C_ {
         Dimensions CalculateResolution(ushort width) {
           int RoundedWidth = (width + 7) / 8 * 8;
 
-          return new(RoundedWidth, (int)Math.Ceiling(RoundedWidth / SCREEN_RATIO / 8f) * 8);
+          return new(RoundedWidth, (int)Math.Ceiling(RoundedWidth / ConfigManager.Graphics.ScreenRatio / 8f) * 8);
         }
 
         List<Dimensions> GenerateResolutions(float startWidth, float scaleFactor, bool descending) {
@@ -994,7 +1145,6 @@ namespace Cube_Run_C_ {
           case Menus.Display:
             Dimensions ScreenDimensions = ValidResolutions[(int)SelectedValue.X];
             ButtonTexts[2] = "Fullscreen";
-            ButtonTexts[3] = "Letterbox";
             ContentTexts[0] = $"Window-Size: ({ScreenDimensions.Width} x {ScreenDimensions.Height})";
             ContentTexts[1] = $"Brightness: {SelectedValue.Y:F2}x";
             ContentTexts[2] = $"Fps: {SelectedValue.Z:F0}";
@@ -1019,9 +1169,6 @@ namespace Cube_Run_C_ {
             DisplayTexts[Index] = new(ContentTexts[Index], new((HalfWidth - TextSize.X * 0.5f) * Scale, (Sliders[Index].OriginalPosition.Y - TextSize.Y * 1.5f) * Scale), Color.White);
           }
         }
-
-        if (ButtonTexts[3] != string.Empty)
-          UpdateButtonText(6, ButtonTexts[3], MainMenuButtons[3].OriginalRect.FCenter());
       }
 
 
@@ -1086,7 +1233,7 @@ namespace Cube_Run_C_ {
                     break;
                 }
 
-                MenuStatus[] CurrentSliderFlags = CurrentMenu == Menus.Display ? DisplaySliderFlags : AudioSliderFlags;
+                MenuFlags[] CurrentSliderFlags = CurrentMenu == Menus.Display ? DisplaySliderFlags : AudioSliderFlags;
                 Set(ref Stats, (ushort)CurrentSliderFlags[Index], true);
                 UpdateAllText();
               }
@@ -1187,30 +1334,47 @@ namespace Cube_Run_C_ {
         }
       }
 
-      public static void DrawRectOutline(SpriteBatch spriteBatch, Texture2D pixel, Rectangle rect, int thickness = 1) {
+      /// <summary>
+      /// Draws 4 scaled Rectangles as an outline.
+      /// </summary>
+      /// <param name="spriteBatch"> SpriteBatch Renderer </param>
+      /// <param name="color"> Outline Color </param>
+      /// <param name="rect"> Outlined Rectangle </param>
+      /// <param name="thickness"> Outline Thickness </param>
+      public static void DrawRectOutline(SpriteBatch spriteBatch, Colors color, Rectangle rect, int thickness = 1) {
         float ScreenScale = Scale;
 
+        Texture2D ColorTexture = ColorTextures[(int)color];
         Vector2 Position = rect.TopLeft() * ScreenScale;
         float ScaledThickness = thickness * ScreenScale;
         float ScaledWidth = rect.Width * ScreenScale;
         float ScaledHeight = rect.Height * ScreenScale;
         
-        spriteBatch.Draw(pixel, Position, null, Color.White, 0f, Vector2.Zero, new Vector2(rect.Width * ScreenScale, ScaledThickness), SpriteEffects.None, 0f);
-        spriteBatch.Draw(pixel, Position + new Vector2(0, (rect.Height * ScreenScale) - ScaledThickness), null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledWidth, ScaledThickness), SpriteEffects.None, 0f);
-        spriteBatch.Draw(pixel, Position, null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledThickness, ScaledHeight), SpriteEffects.None, 0f);
-        spriteBatch.Draw(pixel, Position + new Vector2(ScaledWidth - ScaledThickness, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledThickness, ScaledHeight), SpriteEffects.None, 0f);
-      }  
+        spriteBatch.Draw(ColorTexture, Position, null, Color.White, 0f, Vector2.Zero, new Vector2(rect.Width * ScreenScale, ScaledThickness), SpriteEffects.None, 0f);
+        spriteBatch.Draw(ColorTexture, Position + new Vector2(0, (rect.Height * ScreenScale) - ScaledThickness), null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledWidth, ScaledThickness), SpriteEffects.None, 0f);
+        spriteBatch.Draw(ColorTexture, Position, null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledThickness, ScaledHeight), SpriteEffects.None, 0f);
+        spriteBatch.Draw(ColorTexture, Position + new Vector2(ScaledWidth - ScaledThickness, 0), null, Color.White, 0f, Vector2.Zero, new Vector2(ScaledThickness, ScaledHeight), SpriteEffects.None, 0f);
+      }
+
+      /// <summary>
+      /// Draws a Scaled Rectangle.
+      /// </summary>
+      /// <param name="spriteBatch"> SpriteBatch Renderer </param>
+      /// <param name="rect"> Source Rectangle </param>
+      /// <param name="color"> Rectangle Color </param>
+      [MethodImpl(MethodImplOptions.AggressiveInlining)]
+      public static void DrawRect(SpriteBatch spriteBatch, Rectangle rect, Colors color) => spriteBatch.Draw(ColorTextures[(int)color], rect.TopLeft(), null, Color.White, 0f, Vector2.Zero, new Vector2(rect.Width * Scale, rect.Height * Scale), SpriteEffects.None, 0f); 
     }
 
 
     public class Slider {
       private readonly Texture2D BackgroundTexture;
-      private Texture2D SliderTexture;
       private readonly Rectangle OriginalBackgroundRect;
+      public readonly Vector2 OriginalPosition;
+      private Texture2D SliderTexture;
       private Rectangle BackgroundRect;
       private RectangleF OriginalSliderRect;
       private RectangleF SliderRect;
-      public readonly Vector2 OriginalPosition;
       public Vector2 Position;
       private readonly float[] ValueBounds;
       private readonly float OriginalWidth;
@@ -1249,7 +1413,7 @@ namespace Cube_Run_C_ {
 
       public void Draw(SpriteBatch spriteBatch) {
         spriteBatch.Draw(this.BackgroundTexture, this.BackgroundRect, Color.White);
-        spriteBatch.Draw(this.SliderTexture, this.SliderRect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Camera.Scale, SpriteEffects.None, 0f);
+        spriteBatch.Draw(this.SliderTexture, this.SliderRect.TopLeft(), null, Color.White, 0f, Vector2.Zero, Scale, SpriteEffects.None, 0f);
       }
 
 
@@ -1269,23 +1433,23 @@ namespace Cube_Run_C_ {
       }
 
       public void UpdateScale() {
-        this.BackgroundRect = this.OriginalBackgroundRect.Scaled(Camera.Scale);
+        this.BackgroundRect = this.OriginalBackgroundRect.Scaled(Scale);
 
-        this.Position = this.OriginalPosition * Camera.Scale;
-        this.Width = this.OriginalWidth * Camera.Scale;
+        this.Position = this.OriginalPosition * Scale;
+        this.Width = this.OriginalWidth * Scale;
 
-        this.SliderRect = new(this.Position.X + (this.Value - this.ValueBounds[0]) / (this.ValueBounds[1] - this.ValueBounds[0]) * this.Width - this.SliderTexture.Width * Camera.Scale * 0.5f, this.Position.Y, this.SliderTexture.Width * Camera.Scale, this.SliderTexture.Height * Camera.Scale);
+        this.SliderRect = new(this.Position.X + (this.Value - this.ValueBounds[0]) / (this.ValueBounds[1] - this.ValueBounds[0]) * this.Width - this.SliderTexture.Width * Scale * 0.5f, this.Position.Y, this.SliderTexture.Width * Scale, this.SliderTexture.Height * Scale);
       }
 
       public void Update() {
         Vector2 MousePosition = InputManager.MousePosition().ToVector2();
 
-        if (!IsSet(PauseMenu.Stats, (ushort)MenuStatus.DraggingSlider) && !IsSet(this.Stats, (byte)SliderFlags.Dragging) && InputManager.IsMouseButtonDown(MouseButton.Left) && this.SliderRect.Contains(MousePosition.ToPointF())) {
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.DraggingSlider, true);
+        if (!IsSet(PauseMenu.Stats, (ushort)MenuFlags.DraggingSlider) && !IsSet(this.Stats, (byte)SliderFlags.Dragging) && InputManager.IsMouseButtonDown(MouseButton.Left) && this.SliderRect.Contains(MousePosition.ToPointF())) {
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.DraggingSlider, true);
           Set(ref this.Stats, (byte)SliderFlags.Dragging, true);
         }
         if (InputManager.IsMouseButtonReleased(MouseButton.Left)) {
-          Set(ref PauseMenu.Stats, (ushort)MenuStatus.DraggingSlider, false);
+          Set(ref PauseMenu.Stats, (ushort)MenuFlags.DraggingSlider, false);
           Set(ref this.Stats, (byte)SliderFlags.Dragging, false);
         }
 

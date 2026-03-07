@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using static Cube_Run_C_.Assets;
 using static Cube_Run_C_.Assets.VisualManager;
+using static Cube_Run_C_.ConfigManager;
 using static Cube_Run_C_.Globals;
 using static Cube_Run_C_.Sprites;
 using static Cube_Run_C_.Tools;
@@ -35,7 +36,6 @@ namespace Cube_Run_C_ {
     }
 
 
-
     private static readonly HashSet<Sprite> SpriteSet = [];
     public static List<Sprite> SpriteList = [];
     public static List<BasicSprite> BasicSpriteList = [];
@@ -43,10 +43,12 @@ namespace Cube_Run_C_ {
     public static List<Sprite> QuerySprites = [];
     private static List<BasicSprite> BasicQuerySprites = [];
 
+    private static Sprite[] SortedSpritesBuffer = new Sprite[ConfigManager.Camera.MaxExpectedSprites];
+    private static readonly int[] CountsBuffer = new int[Spatial.MAX_Z_LAYERS];
+
     public static readonly SpatialGrid SpatialGrid = new();
     private static readonly BasicSpatialGrid BasicSpatialGrid = new();
     
-    public static Matrix ScaleMatrix = new();
     public static Matrix SpriteMatrix = new();
 
     private static Vector2 DrawScale = Vector2.One;
@@ -63,11 +65,8 @@ namespace Cube_Run_C_ {
     public static Color BackgroundColor;
 
     public static float Scale = 1.0f;
-    private static float ScaleY = 1.0f;
     private static float InverseScale = 1.0f;
-    private static float InverseScaleY = 1.0f;
     private static float UnZoomedScale = 1.0f;
-    private static float UnZoomedScaleY = 1.0f;
     public static byte Stats = 0x00;
     
     private static Rectangle LetterboxLeft = Rectangle.Empty;
@@ -92,6 +91,8 @@ namespace Cube_Run_C_ {
       LastTargetPosition = Vector2.Zero;
       BackgroundColor = backgroundColor;
 
+      Array.Clear(CountsBuffer, 0, CountsBuffer.Length);
+
       SetAll(ref Stats, false);
       UpdateScale();
     }
@@ -106,7 +107,7 @@ namespace Cube_Run_C_ {
         SpriteSet.Add(sprite);
         NewSprites.Add(sprite);
         SpatialGrid.Insert(sprite);
-        Set(ref Stats, (byte)CameraStats.UpdateSort, true);
+        Set(ref Stats, (byte)CameraFlags.UpdateSort, true);
       }
     }
 
@@ -144,7 +145,7 @@ namespace Cube_Run_C_ {
       BasicQuerySprites.Clear();
       SpatialGrid.Clear();
       BasicSpatialGrid.Clear();
-      Set(ref Stats, (byte)CameraStats.UpdateSort, false);
+      Set(ref Stats, (byte)CameraFlags.UpdateSort, false);
     }
 
 
@@ -152,41 +153,36 @@ namespace Cube_Run_C_ {
       if (doLock) 
         UpdateOffset(position);
 
-      Set(ref Stats, (byte)CameraStats.LockedPosition, doLock);
+      Set(ref Stats, (byte)CameraFlags.LockedPosition, doLock);
     }
 
     public static void Zoom(float zoomScale, bool doZoom) {
       if (doZoom) {
-        if (IsSet(Stats, (byte)CameraStats.Zoomed)) {
-          Scale  = UnZoomedScale  * zoomScale;
-          ScaleY = UnZoomedScaleY * zoomScale;
+        if (IsSet(Stats, (byte)CameraFlags.Zoomed)) {
+          Scale = UnZoomedScale * zoomScale;
         } else {
-          UnZoomedScale  = Scale;
-          UnZoomedScaleY = ScaleY;
-          Scale  *= zoomScale;
-          ScaleY *= zoomScale;
+          UnZoomedScale = Scale;
+          Scale *= zoomScale;
         }
       } else {
-        Scale  = UnZoomedScale;
-        ScaleY = UnZoomedScaleY;
+        Scale = UnZoomedScale;
       }
 
-      InverseScale  = 1f / Scale;
-      InverseScaleY = 1f / ScaleY;
-      LevelDimensions = new(LevelData.Dimensions.PixelWidth * Scale, LevelData.Dimensions.PixelHeight * ScaleY);
+      InverseScale = 1f / Scale;
+      LevelDimensions = new(LevelData.Dimensions.PixelWidth * Scale, LevelData.Dimensions.PixelHeight * Scale);
 
-      Set(ref Stats, (byte)CameraStats.Zoomed, doZoom);
+      Set(ref Stats, (byte)CameraFlags.Zoomed, doZoom);
       UpdateOffset(LastTargetPosition);
     }
 
 
     public static void UpdateOffset(Vector2 position) {
-      Offset.X = Math.Max(0, Math.Min(LevelDimensions.Width  - ViewportDimensions.Width,  (position.X * Scale)  - HalfScreen.Width));
-      Offset.Y = Math.Max(0, Math.Min(LevelDimensions.Height - ViewportDimensions.Height, (position.Y * ScaleY) - HalfScreen.Height));
+      Offset.X = Math.Max(0, Math.Min(LevelDimensions.Width - ViewportDimensions.Width, (position.X * Scale) - HalfScreen.Width));
+      Offset.Y = Math.Max(0, Math.Min(LevelDimensions.Height - ViewportDimensions.Height, (position.Y * Scale) - HalfScreen.Height));
       LastTargetPosition = position;
 
       UpdateMatrix();
-      Set(ref Stats, (byte)CameraStats.UpdateScreenRect, true);
+      Set(ref Stats, (byte)CameraFlags.UpdateScreenRect, true);
     }
 
     public static void UpdateScale() {
@@ -194,74 +190,53 @@ namespace Cube_Run_C_ {
       FullViewport = Graphics.GraphicsDevice.Viewport;
       ScreenDimensions = WindowDimensions;
 
-      bool LetterboxMode = IsSet(GlobalStats, (ushort)GlobalFlags.LetterBoxMode);
+      float TargetAspectRatio = 4f / 3f;
+      int ViewportWidth = (int)(WindowDimensions.Height * TargetAspectRatio);
+      int ViewportHeight = WindowDimensions.Height;
 
-      if (LetterboxMode) {
-        float TargetAspectRatio = 4f / 3f;
-        int ViewportWidth = (int)(WindowDimensions.Height * TargetAspectRatio);
-        int ViewportHeight = WindowDimensions.Height;
-
-        if (ViewportWidth > WindowDimensions.Width) {
-          ViewportWidth = WindowDimensions.Width;
-          ViewportHeight = (int)(WindowDimensions.Width / TargetAspectRatio);
-        }
-
-        int ViewportX = (WindowDimensions.Width - ViewportWidth) >> 1;
-        int ViewportY = (WindowDimensions.Height - ViewportHeight) >> 1;
-
-        GameViewport = new(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
-        
-        if (ViewportX > 0) {
-          LetterboxLeft  = new(0, 0, ViewportX, WindowDimensions.Height);
-          LetterboxRight = new(ViewportX + ViewportWidth, 0, ViewportX, WindowDimensions.Height);
-        } else {
-          LetterboxLeft  = new(0, 0, WindowDimensions.Width, ViewportY);
-          LetterboxRight = new(0, ViewportY + ViewportHeight, WindowDimensions.Width, ViewportY);
-        }
-
-        ViewportDimensions = new(ViewportWidth, ViewportHeight);
-
-        float NewScale = (float)ViewportDimensions.Height / (float)DEFAULT_DIMENSIONS.Height;
-
-        HalfScreen = new(ViewportDimensions.Width >> 1, ViewportDimensions.Height >> 1);
-        LevelDimensions = new(LevelData.Dimensions.PixelWidth * NewScale, LevelData.Dimensions.PixelHeight * NewScale);
-
-        DrawScale = new(NewScale);
-        Scale = NewScale;
-        ScaleY = NewScale;
-        InverseScale = 1f / NewScale;
-        InverseScaleY = 1f / NewScale;
-        UnZoomedScale = NewScale;
-        UnZoomedScaleY = NewScale;
-      } else {
-        GameViewport = FullViewport;
-        LetterboxLeft = Rectangle.Empty;
-        LetterboxRight = Rectangle.Empty;
-        ViewportDimensions = WindowDimensions;
-
-        float NewScale = (float)ViewportDimensions.Width / (float)DEFAULT_DIMENSIONS.Width;
-
-        float NewScaleY = (float)ViewportDimensions.Height / (float)DEFAULT_DIMENSIONS.Height;
-
-        HalfScreen = new(ViewportDimensions.Width >> 1, ViewportDimensions.Height >> 1);
-        LevelDimensions = new(LevelData.Dimensions.PixelWidth * NewScale, LevelData.Dimensions.PixelHeight * NewScaleY);
-
-        DrawScale = new(NewScale, NewScaleY);
-        Scale = NewScale;
-        ScaleY = NewScaleY;
-        InverseScale = 1f / NewScale;
-        InverseScaleY = 1f / NewScaleY;
-        UnZoomedScale = NewScale;
-        UnZoomedScaleY = NewScaleY;
+      if (ViewportWidth > WindowDimensions.Width) {
+        ViewportWidth = WindowDimensions.Width;
+        ViewportHeight = (int)(WindowDimensions.Width / TargetAspectRatio);
       }
+
+      int ViewportX = (WindowDimensions.Width - ViewportWidth) >> 1;
+      int ViewportY = (WindowDimensions.Height - ViewportHeight) >> 1;
+
+      GameViewport = new(ViewportX, ViewportY, ViewportWidth, ViewportHeight);
+        
+      if (ViewportX > 0) {
+        LetterboxLeft  = new(0, 0, ViewportX, WindowDimensions.Height);
+        LetterboxRight = new(ViewportX + ViewportWidth, 0, ViewportX, WindowDimensions.Height);
+      } else {
+        LetterboxLeft  = new(0, 0, WindowDimensions.Width, ViewportY);
+        LetterboxRight = new(0, ViewportY + ViewportHeight, WindowDimensions.Width, ViewportY);
+      }
+
+      ViewportDimensions = new(ViewportWidth, ViewportHeight);
+
+      float NewScale = (float)ViewportDimensions.Height / (float)DEFAULT_DIMENSIONS.Height;
+
+      HalfScreen = new(ViewportDimensions.Width >> 1, ViewportDimensions.Height >> 1);
+      LevelDimensions = new(LevelData.Dimensions.PixelWidth * NewScale, LevelData.Dimensions.PixelHeight * NewScale);
+      LastTargetPosition = Vector2.Zero;
+
+      DrawScale = new(NewScale);
+      Scale = NewScale;
+      InverseScale = 1f / NewScale;
+      UnZoomedScale = NewScale;
 
       UpdateOffset(LastTargetPosition);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void UpdateMatrix() {
-      ScaleMatrix = Matrix.CreateScale(DrawScale.X, DrawScale.Y, 0f);
-      SpriteMatrix = ScaleMatrix * Matrix.CreateTranslation(MathF.Round(-Offset.X), MathF.Round(-Offset.Y), 0f);
+    private static void UpdateMatrix() => SpriteMatrix = Matrix.CreateScale(DrawScale.X, DrawScale.Y, 0f) * Matrix.CreateTranslation(MathF.Round(-Offset.X), MathF.Round(-Offset.Y), 0f);
+
+    public static void UpdateSpriteBuffer(int maxSize) {
+      if (maxSize == SortedSpritesBuffer.Length) {
+        Array.Clear(SortedSpritesBuffer, 0, SortedSpritesBuffer.Length);
+      } else {
+        SortedSpritesBuffer = new Sprite[maxSize];
+      }
     }
 
 
@@ -277,7 +252,7 @@ namespace Cube_Run_C_ {
 
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector2 WorldToScreen(Vector2 worldPosition) => new(worldPosition.X * Scale - Offset.X, worldPosition.Y * ScaleY - Offset.Y);
+    public static Vector2 WorldToScreen(Vector2 worldPosition) => (worldPosition * Scale) - Offset;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool InScreen(Vector2 topLeft, Vector2 bottomRight) => bottomRight.X >= CachedScreenRect.X && topLeft.X <= CachedScreenRect.Right && bottomRight.Y >= CachedScreenRect.Y && topLeft.Y <= CachedScreenRect.Bottom;
@@ -300,81 +275,7 @@ namespace Cube_Run_C_ {
     }
 
 
-    public static void UpdateDraw(Vector2 targetPosition) {
-      if (SpriteList.Count == 0 && BasicSpriteList.Count == 0)
-        return;
-
-      QuerySprites.Clear();
-      BasicQuerySprites.Clear();
-
-      float ExpectedWidth  = LevelData.Dimensions.PixelWidth  * Scale;
-      float ExpectedHeight = LevelData.Dimensions.PixelHeight * ScaleY;
-
-      if (LevelDimensions.Width != ExpectedWidth || LevelDimensions.Height != ExpectedHeight) {
-        LevelDimensions = new(ExpectedWidth, ExpectedHeight);
-        Set(ref Stats, (byte)CameraStats.UpdateScreenRect, true);
-      }
-
-      if (!IsSet(Stats, (byte)CameraStats.LockedPosition) && LastTargetPosition != targetPosition)
-        UpdateOffset(targetPosition);
-
-      if (IsSet(Stats, (byte)CameraStats.UpdateScreenRect)) {
-        CachedScreenRect = new(Offset.X * InverseScale, Offset.Y * InverseScaleY, ViewportDimensions.Width * InverseScale, ViewportDimensions.Height * InverseScaleY);
-        Set(ref Stats, (byte)CameraStats.UpdateScreenRect, false);
-      }
-
-      if (IsSet(Stats, (byte)CameraStats.UpdateSort)) {
-        if (NewSprites.Count > 0) {
-          if (NewSprites.Count >= 10 && NewSprites.Count <= 50) {
-            for (int Index = 0; Index < NewSprites.Count; Index++) {
-              SpriteList.Insert(BinarySearchInsertionPoint(SpriteList, NewSprites[Index].Z), NewSprites[Index]);
-            }
-          } else {
-            SpriteList.AddRange(NewSprites);
-            SpriteList.Sort((spriteA, spriteB) => {
-              int ZCompare = spriteA.Z.CompareTo(spriteB.Z);
-
-              if (ZCompare != 0)
-                return ZCompare;
-
-              return spriteA.GetImage().GetHashCode().CompareTo(spriteB.GetImage().GetHashCode());
-            });
-          }
-
-          NewSprites.Clear();
-        }
-
-        Set(ref Stats, (byte)CameraStats.UpdateSort, false);
-      }
-
-      BasicQuerySprites = BasicSpatialGrid.Query(CachedScreenRect);
-      QuerySprites = SpatialGrid.Query(CachedScreenRect);
-
-      QuerySprites.RemoveAll(sprite => !SpriteSet.Contains(sprite));
-      
-      if (QuerySprites.Count > 1) {
-        Sprite[] SortedSprites = new Sprite[QuerySprites.Count];
-        int[] Counts = new int[ConfigManager.Current.Spatial.MAX_Z_LAYERS];
-
-        for (int Index = 0; Index < QuerySprites.Count; Index++) {
-          Counts[QuerySprites[Index].Z]++;
-        }
-
-        for (int Index = 1; Index < ConfigManager.Current.Spatial.MAX_Z_LAYERS; Index++) {
-          Counts[Index] += Counts[Index - 1];
-        }
-
-        for (int Index = QuerySprites.Count - 1; Index >= 0; Index--) {
-          Sprite Sprite = QuerySprites[Index];
-          SortedSprites[--Counts[Sprite.Z]] = Sprite;
-        }
-
-        for (int Index = 0; Index < QuerySprites.Count; Index++) {
-          QuerySprites[Index] = SortedSprites[Index];
-        }
-      }
-    }
-
+   
     public static void Draw(SpriteBatch spriteBatch) {
       if (SpriteList.Count == 0 && BasicSpriteList.Count == 0)
         return;
@@ -402,10 +303,10 @@ namespace Cube_Run_C_ {
         SpriteProperties.Position = SpriteRect.TopLeft();
         SpriteProperties.Effects = Sprite.Effects;
 
-        Color SpriteColor = IsSet(Sprite.Effects, (byte)SpriteEffectFlags.Ghost) ? Color.White * GHOST_ALPHA : Color.White;
+        Color SpriteColor = IsSet(Sprite.Effects, (byte)SpriteEffectFlags.Ghost) ? Color.White * ConfigManager.Graphics.GhostAlpha : Color.White;
 
         if (SpriteProperties.Transformations != SpriteTransform.Default) {
-          spriteBatch.Draw(SpriteProperties.Texture, SpriteProperties.Position + (Sprite.DrawOffset * Scale), SpriteProperties.Frame, SpriteColor, SpriteProperties.Transformations.Rotation, Sprite.RotationOffset, 1f, SpriteProperties.Transformations.Effect, 0f);
+          spriteBatch.Draw(SpriteProperties.Texture, SpriteProperties.Position + Sprite.DrawOffset, SpriteProperties.Frame, SpriteColor, SpriteProperties.Transformations.Rotation, Sprite.RotationOffset, 1f, SpriteProperties.Transformations.Effect, 0f);
         } else {
           spriteBatch.Draw(SpriteProperties.Texture, SpriteProperties.Position, SpriteProperties.Frame, SpriteColor, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
         }
@@ -418,6 +319,81 @@ namespace Cube_Run_C_ {
 
       if (LetterboxRight.Width > 0 && LetterboxRight.Height > 0)
         spriteBatch.Draw(ColorTextures[(int)Colors.Black], LetterboxRight, Color.Black);
+    }
+
+
+    public static void Update(Vector2 targetPosition) {
+      if (SpriteList.Count == 0 && BasicSpriteList.Count == 0)
+        return;
+
+      QuerySprites.Clear();
+      BasicQuerySprites.Clear();
+
+      float ExpectedWidth = LevelData.Dimensions.PixelWidth  * Scale;
+      float ExpectedHeight = LevelData.Dimensions.PixelHeight * Scale;
+
+      if (LevelDimensions.Width != ExpectedWidth || LevelDimensions.Height != ExpectedHeight) {
+        LevelDimensions = new(ExpectedWidth, ExpectedHeight);
+        Set(ref Stats, (byte)CameraFlags.UpdateScreenRect, true);
+      }
+
+      if (!IsSet(Stats, (byte)CameraFlags.LockedPosition) && LastTargetPosition != targetPosition)
+        UpdateOffset(targetPosition);
+
+      if (IsSet(Stats, (byte)CameraFlags.UpdateScreenRect)) {
+        CachedScreenRect = new(Offset.X * InverseScale, Offset.Y * InverseScale, ViewportDimensions.Width * InverseScale, ViewportDimensions.Height * InverseScale);
+        Set(ref Stats, (byte)CameraFlags.UpdateScreenRect, false);
+      }
+
+      if (IsSet(Stats, (byte)CameraFlags.UpdateSort)) {
+        if (NewSprites.Count > 0) {
+          if (NewSprites.Count >= 10 && NewSprites.Count <= 50) {
+            for (int Index = 0; Index < NewSprites.Count; Index++) {
+              SpriteList.Insert(BinarySearchInsertionPoint(SpriteList, NewSprites[Index].Z), NewSprites[Index]);
+            }
+          } else {
+            SpriteList.AddRange(NewSprites);
+            SpriteList.Sort((spriteA, spriteB) => {
+              int ZCompare = spriteA.Z.CompareTo(spriteB.Z);
+
+              if (ZCompare != 0)
+                return ZCompare;
+
+              return spriteA.GetImage().GetHashCode().CompareTo(spriteB.GetImage().GetHashCode());
+            });
+          }
+
+          NewSprites.Clear();
+        }
+
+        Set(ref Stats, (byte)CameraFlags.UpdateSort, false);
+      }
+
+      BasicQuerySprites = BasicSpatialGrid.Query(CachedScreenRect);
+      QuerySprites = SpatialGrid.Query(CachedScreenRect);
+
+      QuerySprites.RemoveAll(sprite => !SpriteSet.Contains(sprite));
+      
+      if (QuerySprites.Count > 1) {
+        Array.Clear(CountsBuffer, 0, CountsBuffer.Length);
+
+        for (int Index = 0; Index < QuerySprites.Count; Index++) {
+          CountsBuffer[QuerySprites[Index].Z]++;
+        }
+
+        for (int Index = 1; Index < Spatial.MAX_Z_LAYERS; Index++) {
+          CountsBuffer[Index] += CountsBuffer[Index - 1];
+        }
+
+        for (int Index = QuerySprites.Count - 1; Index >= 0; Index--) {
+          Sprite Sprite = QuerySprites[Index];
+          SortedSpritesBuffer[--CountsBuffer[Sprite.Z]] = Sprite;
+        }
+
+        for (int Index = 0; Index < QuerySprites.Count; Index++) {
+          QuerySprites[Index] = SortedSpritesBuffer[Index];
+        }
+      }
     }
 
 

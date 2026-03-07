@@ -8,7 +8,7 @@ using static Cube_Run_C_.Assets.SoundManager;
 using static Cube_Run_C_.Assets.VisualManager;
 using static Cube_Run_C_.ConfigManager;
 using static Cube_Run_C_.Globals;
-using static Cube_Run_C_.Globals.PlayerData;
+using static Cube_Run_C_.PlatformerPlayer;
 using static Cube_Run_C_.Sprites;
 using static Cube_Run_C_.Tools;
 using static Cube_Run_C_.Tools.BitMask;
@@ -95,28 +95,30 @@ namespace Cube_Run_C_ {
   }
 
 
-  public static class LevelController {
+  public static class PlatformerLevelController {
     public static void BeginLevel() {
-      BrightnessEffect.Parameters["LanternEnabled"].SetValue(false);
+      Shader.SetVariable("LanternEnabled", false);
+
       PlaySong();
-      Level.Setup($"Maps/Platformers/{LevelData.Difficulty}Mode/{CurrentLevel}");
+      PlatformerLevel.Setup($"Maps/Platformers/{LevelData.Difficulty}Mode/{CurrentLevel}");
+      PlayerDisplay.Display();
     }
 
     public static void EndLevel() {
-      if (IsSet(Level.FlagStats, (byte)LevelStatFlags.Transitioning))
+      if (IsSet(PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Transitioning))
         return;
 
-      Set(ref Level.FlagStats, (byte)LevelStatFlags.Transitioning, true);
-      Set(ref Level.FlagStats, (byte)LevelStatFlags.Active, false);
+      Set(ref PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Transitioning, true);
+      Set(ref PlatformerLevel.FlagStats, (byte)PlatformerLevelFlags.Active, false);
 
       CurrentLevel++;
       StopMusic();
-      Level.Reset();
-      EndLevelScreen.Display();
+      PlatformerLevel.Reset();
+      PlatformerEndScreen.Display();
     }
   }
 
-  public static class Level {
+  public static class PlatformerLevel {
     private static readonly Dictionary<string, TileLayerProperty> TileLayerProperties = new() {
       ["Terrain"] = new(ZLayers.Main, [Groups.All, Groups.Collidable]),
       ["Enemies"] = new(ZLayers.Main, [Groups.All, Groups.Damage]),
@@ -143,8 +145,6 @@ namespace Cube_Run_C_ {
 
 
     public static void Reset() {
-      Camera.Reset(Color.Teal);
-      
       Globals.Player = null;
       LevelData.Gravity = 800;
       LevelData.FSBlockPositions.Clear();
@@ -189,6 +189,9 @@ namespace Cube_Run_C_ {
     }
 
     public static void Setup(string mapPath) {
+      Camera.Reset(Color.Teal);
+      FillColor = Camera.BackgroundColor;
+
       LoadTmxMap(mapPath);
       SetupLevelVariables();
       
@@ -199,7 +202,9 @@ namespace Cube_Run_C_ {
       SpawnOrbPositions[0] = Vector2.Zero;
       SpawnOrbPositions[1] = Vector2.Zero;
       SpawnOrbPositions[2] = Vector2.Zero;
-      LevelData.Dimensions = new(CurrentMap.Width * TILE_SIZE, CurrentMap.Height * TILE_SIZE, CurrentMap.Width, CurrentMap.Height);
+      
+      LevelData.Dimensions = new(CurrentMap.Width * Gameplay.TileSize, CurrentMap.Height * Gameplay.TileSize, CurrentMap.Width, CurrentMap.Height);
+      Camera.UpdateSpriteBuffer(CurrentMap.SpriteCount);
 
       for (int Index = 0; Index < CurrentMap.Tilesets.Count; Index++) {
         SetupTileset(CurrentMap.Tilesets[Index]);
@@ -213,7 +218,9 @@ namespace Cube_Run_C_ {
         SetupObjectLayer(CurrentMap.ObjectGroups[Index]);
       }
 
-      Set(ref FlagStats, (byte)LevelStatFlags.Active, true);
+      Set(ref FlagStats, (byte)PlatformerLevelFlags.Active, true);
+      Set(ref PlayerDisplay.Stats, (byte)PlayerDisplayFlags.DisplayCoins, MaxStats.Coins > 0);
+
       Globals.Player = new(SpawnOrbPositions[RNG.Next(0, SpawnOrbIndex)]);
 
 
@@ -256,18 +263,16 @@ namespace Cube_Run_C_ {
               continue;
 
             if (LayerName == "Decoration") {
-              Camera.Add(new BasicSprite(Image, new(X * TILE_SIZE, Y * TILE_SIZE)));
+              Camera.Add(new BasicSprite(Image, new(X * Gameplay.TileSize, Y * Gameplay.TileSize)));
             } else {
               if (!TileLayerProperties.TryGetValue(LayerName, out TileLayerProperty LayerProperty))
                 continue;
 
-              _ = new Sprite(Image, new(X * TILE_SIZE, Y * TILE_SIZE), LayerProperty.Groups, LayerProperty.Z);
+              _ = new Sprite(Image, new(X * Gameplay.TileSize, Y * Gameplay.TileSize), LayerProperty.Groups, LayerProperty.Z);
             }
           }
         }
       }
-
-      
 
       void SetupObjectLayer(TmxObjectGroup objectGroup) {
         for (int Index = 0; Index < objectGroup.Objects.Count; Index++) {
@@ -278,7 +283,7 @@ namespace Cube_Run_C_ {
             if (Object.Gid.HasValue && GidTextureCache.TryGetValue(Object.Gid.Value, out Texture2D Texture))
               Image = Texture;
 
-            Vector2 Position = new(Object.X, Object.Y - TILE_SIZE);
+            Vector2 Position = new(Object.X, Object.Y - Gameplay.TileSize);
             _ = new Sprite(Image, Position, [Groups.All, Groups.Damage], ZLayers.Main);
             LevelData.FSBlockPositions.Add(Position);
           }
@@ -291,7 +296,7 @@ namespace Cube_Run_C_ {
           AssignedGroups.Add(Groups.All);
 
           Image = null;
-          Vector2 Position = new(Object.X, Object.Y - TILE_SIZE);
+          Vector2 Position = new(Object.X, Object.Y - Gameplay.TileSize);
           string Name = Object.Name ?? "";
 
           if (objectGroup.Name == "Interactable Enemies" && Name == "FallingSpikeBlock") {
@@ -304,13 +309,13 @@ namespace Cube_Run_C_ {
 
           switch (objectGroup.Name) {
             case "Interactable":
-              SetupInteractableObject(Object, ref AssignedGroups, ZLayers.Main, Position, Image, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectStats.Active), Object.Trim);
+              SetupInteractableObject(Object, ref AssignedGroups, ZLayers.Main, Position, Image, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectFlags.Active), Object.Trim);
               break;
             case "Interactable Enemies":
-              SetupInteractableEnemy(Object, Position, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectStats.Active), Image);
+              SetupInteractableEnemy(Object, Position, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectFlags.Active), Image);
               break;
             case "Collectable":
-              SetupCollectable(Object, ref AssignedGroups, ZLayers.Main, Position, Image, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectStats.Active), ref SpawnOrbIndex);
+              SetupCollectable(Object, ref AssignedGroups, ZLayers.Main, Position, Image, Object.Orientation, Name, IsSet(Object.Stats, (ushort)ObjectFlags.Active), ref SpawnOrbIndex);
               break;
             case "Moving Object":
               break;
@@ -318,7 +323,10 @@ namespace Cube_Run_C_ {
         }
       }
 
+
       void SetupInteractableObject(TmxObject obj, ref List<Groups> assignedGroups, ZLayers layer, Vector2 position, Texture2D image, Directions faceDirection, string name, bool active, Fragment trim) {
+        bool Active;
+
         switch (name) {
           case "StartBall":
             SpawnOrbPositions[SpawnOrbIndex] = position;
@@ -351,20 +359,18 @@ namespace Cube_Run_C_ {
             _ = new Changer(image, position, obj.Type, obj.RateChange, obj.SpeedChange, obj.DurationChange);
             return;
           case "SwitchBlock":
-            bool Active = IsSet(obj.Stats, (byte)ObjectStats.Active);
+            Active = IsSet(obj.Stats, (byte)ObjectFlags.Active);
             _ = new SwitchBlock(image, position, Active ? [Groups.All, Groups.Switch, Groups.Collidable] : [Groups.All, Groups.Switch], ZLayers.BackgroundTiles, $"Images/TileImages/SwitchBlock{(Active ? "Off" : "On")}", faceDirection);
             return;
-          case "SwitchBlockOn":
-            _ = new SwitchBlock(image, position, [Groups.All, Groups.Switch, Groups.Collidable], ZLayers.BackgroundTiles, "Images/TileImages/SwitchBlockOff", faceDirection);
-            return;
-          case "SwitchBlockOff":
-            _ = new SwitchBlock(image, position, [Groups.All, Groups.Switch], ZLayers.BackgroundTiles, "Images/TileImages/SwitchBlockOn", faceDirection);
+          case "ActivatorBlock":
+            Active = IsSet(obj.Stats, (byte)ObjectFlags.Active);
+            _ = new SwitchBlock(image, position, active ? [Groups.All, Groups.Activator, Groups.Collidable] : [Groups.All, Groups.Activator], ZLayers.BackgroundTiles, $"Images/TileImages/{(Active ? "Inactive" : "Active")}OnBlock", faceDirection);
             return;
           case "Quicksand":
-            _ = new Quicksand(new(AnimationsData[(int)(IsSet(Object.Stats, (ushort)ObjectStats.Deep) ? Animations.QuicksandDeep : Animations.Quicksand)]), position, IsSet(Object.Stats, (ushort)ObjectStats.Deep));
+            _ = new Quicksand(new(AnimationsData[(int)(IsSet(Object.Stats, (ushort)ObjectFlags.Deep) ? Animations.QuicksandDeep : Animations.Quicksand)]), position, IsSet(Object.Stats, (ushort)ObjectFlags.Deep));
             return;
           case "Spring":
-            _ = new Spring(position, faceDirection, IsSet(Object.Stats, (ushort)ObjectStats.Multi));
+            _ = new Spring(position, faceDirection, IsSet(Object.Stats, (ushort)ObjectFlags.Multi));
             return;
           case "Ladder":
             assignedGroups.Add(Groups.Ladder);
@@ -385,18 +391,19 @@ namespace Cube_Run_C_ {
       }
 
       void SetupInteractableEnemy(TmxObject obj, Vector2 position, Directions faceDirection, string name, bool active, Texture2D image) {
+
         switch (name) {
           case "Canon":
-            _ = new Canon(position, faceDirection, IsSet(Object.Stats, (ushort)ObjectStats.Floor), IsSet(Object.Stats, (ushort)ObjectStats.Passthrough));
+            _ = new Canon(position, faceDirection, IsSet(Object.Stats, (ushort)ObjectFlags.Floor), IsSet(Object.Stats, (ushort)ObjectFlags.Passthrough));
             break;
           case "DeathCube":
-            _ = new DeathCube(position, IsSet(Object.Stats, (ushort)ObjectStats.Horizontal), active);
+            _ = new DeathCube(position, IsSet(Object.Stats, (ushort)ObjectFlags.Horizontal), active);
             break;
           case "FallingSpike":
-            _ = new FallingSpike(position, IsSet(Object.Stats, (ushort)ObjectStats.Automatic), IsSet(Object.Stats, (ushort)ObjectStats.LimitedRange), faceDirection);
+            _ = new FallingSpike(position, IsSet(Object.Stats, (ushort)ObjectFlags.Automatic), IsSet(Object.Stats, (ushort)ObjectFlags.LimitedRange), faceDirection);
             break;
           case "Prowler":
-            _ = new Prowler(position, IsSet(Object.Stats, (ushort)ObjectStats.Horizontal));
+            _ = new Prowler(position, IsSet(Object.Stats, (ushort)ObjectFlags.Horizontal));
             break;
           case "SpikeOn":
             if (obj.Gid.HasValue)
@@ -423,7 +430,7 @@ namespace Cube_Run_C_ {
             MaxStats.LifeBlocks++;
             return;
           case "PowerInvincible":
-            _ = new PowerUp(image, position, PlayerPowers.Invincibility, IsSet(Object.Stats, (ushort)ObjectStats.Respawn));
+            _ = new PowerUp(image, position, PlayerPowers.Invincibility, IsSet(Object.Stats, (ushort)ObjectFlags.Respawn));
             return;
           case "PowerCanceller":
             _ = new PowerUp(image, position, obj.Power, false, true);
@@ -431,6 +438,10 @@ namespace Cube_Run_C_ {
           case "Switch":
             ImagePath += "SwitchOff";
             assignedGroups.Add(Groups.Switch);
+            break;
+          case "Activator":
+            ImagePath += $"Activator{(IsSet(obj.Stats, (byte)ObjectFlags.Active) ? "Off" : "On")}";
+            assignedGroups.Add(Groups.Activator);
             break;
           case "Coin":
             Item Coin = new(new Animation(AnimationsData[(int)Animations.Coin]), position, assignedGroups, layer, "Images/CollectableImages/CoinOff", active);
@@ -548,6 +559,42 @@ namespace Cube_Run_C_ {
       }
     }
 
+    private static void ActivateActivator(bool turnOn) {
+      List<Sprite> ActivatorSprites = SpriteGroups[(int)Groups.Activator].SpriteList;
+
+      for (int Index = 0; Index < ActivatorSprites.Count; Index++) {
+        if (ActivatorSprites[Index] is not SwitchBlock Block) 
+          continue;
+
+        switch (Path.GetFileName(Block.DeactivatorImagePath)) {
+          case "OnSwitch":
+            if (turnOn)
+              continue;
+            break;
+          case "OffSwitch":
+            if (!turnOn)
+              continue;
+            break;
+          case "ActivatorOn":
+            if (turnOn) {
+              continue;
+            } else {
+              SpriteGroups[(int)Groups.Collidable].Add(Block);
+            }
+            break;
+          case "ActivatorOff":
+            if (!turnOn) {
+              continue;
+            } else {
+              SpriteGroups[(int)Groups.Collidable].Remove(Block);
+            }
+            break;
+        }
+
+        Block.Image = GetTexture(Block.DeactivatorImagePath);
+      }
+    }
+
 
     private static void CollectableCollision() {
       CollisionResult = SpriteGroups[(int)Groups.Item].OverlapsWith(PlayerRect);
@@ -583,6 +630,12 @@ namespace Cube_Run_C_ {
             case "SwitchOff":
               ActivateSwitch();
               return;
+            case "ActivatorOn":
+              ActivateActivator(true);
+              return;
+            case "ActivatorOff":
+              ActivateActivator(false);
+              return;
           }
 
           if (Name.Contains("CheckpointOff"))
@@ -611,7 +664,7 @@ namespace Cube_Run_C_ {
             SpriteGroups[(int)Groups.Orb].Add(ScrapGoal);
           }
         } else {
-          LevelController.EndLevel();
+          PlatformerLevelController.EndLevel();
         }
 
         return;
@@ -633,7 +686,7 @@ namespace Cube_Run_C_ {
 
       float SandTop = float.MaxValue;
 
-      if (IsSet(SpriteGroups[(int)Groups.Quicksand].Properties, (byte)SpriteGroupProperties.UseQuery)) {
+      if (IsSet(SpriteGroups[(int)Groups.Quicksand].Properties, (byte)SpriteGroupFlags.UseQuery)) {
         SpriteGroups[(int)Groups.Quicksand].UpdateGrid();
         SpriteList = SpriteGroups[(int)Groups.Quicksand].Grid.Query(PlayerRect);
       } else {
@@ -660,7 +713,7 @@ namespace Cube_Run_C_ {
     private static void EnemyCollision() {
       SpriteList = [];
 
-      if (IsSet(SpriteGroups[(int)Groups.Damage].Properties, (byte)SpriteGroupProperties.UseQuery)) {
+      if (IsSet(SpriteGroups[(int)Groups.Damage].Properties, (byte)SpriteGroupFlags.UseQuery)) {
         SpriteGroups[(int)Groups.Damage].UpdateGrid();
         SpriteList = SpriteGroups[(int)Groups.Damage].Grid.Query(PlayerRect);
       } else {
@@ -684,8 +737,6 @@ namespace Cube_Run_C_ {
             FallingSpikeA.Collision(null);
           } else if (EnemyCollisions.EnemyA is DeathCube DeathCubeA) {
             DeathCubeA.Collision(CollisionResult);
-          } else if (EnemyCollisions.EnemyA is Prowler ProwlerA) {
-            HandleCollision(ProwlerA, CollisionResult, ProwlerA.Horizontal ? Directions.Horizontal : Directions.Vertical);
           }
 
           continue;
