@@ -5,35 +5,22 @@ I also hope to learn to use C#, Monogame, and the .NET framework through this pr
 
 ---
 
-The new update has brought tremendous new features:
+New Features:
+- Activator & Activator-Blocks, acting as toggleable switches
+- Temporary Game-Over foundation, currently terminates Game
+- Configured TmxMap Builder to count Sprites and store in `SpriteCount`
+- Outlined Player methods, variables, getters/setters, and Sprite class into a separate *.cs* file
 
-- The *Camera* system has been optimized with a Matrix to handle screen offset and scale rather than applying to each sprite. 
-- Incorporated Multithreading for the *SaveSystem*, Screenshots, and LevelLoading
-- Outlined *SoundManager* and *Assets* classes into seperate file for convenience
-- Added screenshots with the hotkey F2, and Fullscreen functionality with the F11 hotkey
-- Added *Config* Binary system for easier global variable assignment
-- Added *Bestiary* functionality for future dictionary implementation
-- Added *Quicksand* using linear interpolation for pseudo-accurate sinking
-- Added Spring functionality that has a stronger force with matched input
-- Added *BasicSprite* into *Camera* and Mapsystem for lightweight sprites with no: Animations, Rotations, DrawOffsets
-- Added *ExitWindow*, *SaveWindow*, *EndLevelScreen*, *TmxLoadingScreen*, and *TitleScreen* UI elements
-- Added *SoundManager* as an efficient way to cache and handle Sounds, SoundEffects, and Music
+Optimizations:
+- Reduced Camera allocations by pre-allocating `CountsBuffer` and clearing upon Reset
+- Reduced Camera allocations by allocating `SortedSpritesBuffer` only at the beginning of each level
 
-And optimizations:
+Fixes:
+- Resolved scaling issue in Letterboxing
+- Template implementation inconsistencies: all TMX maps now use Object Templates
 
-- The *Camera* system has been optimized with a Matrix to handle screen offset and scale rather than applying to each sprite.
-- A global Matrix has been added for other elements independent of the Camera, to avoid scaling each sprite.
-- The *Maps* system has been entirely reworked to use a custom *MapContentPipeline* to process and load TmxMaps.
-- A single List<Sprite> pool is now used for all collisions in *Maps*
-- A lightweight *SoundData* struct for SoundEffects, while *SoundEffectInstances* make use of *SoundEffectData*, which includes a loop option
-- Bitmasking in all regions possible, including: Sprites, UI, and Camera
-- *MethodImpl(MethodImplOptions.AggressiveInlining)*'d getters/setters and conversion functions (eg *ToVector2()*)
-- Added *BVector*, which makes use of bytes instead of floats for simple direction Vectors
-  
 ---
 
 ## Planned Features/Fixes (By next Update):
-- Resolve issues in Letterboxing
 - Decide final tile-size, and if smaller: Render to small target and scale-up each draw frame
-- Finalize template-conversion across all TMX maps
 - Add large/small powerups
